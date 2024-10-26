@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Settings } from 'lucide-react';
 
 // Emoji components
 const SmileEmoji = () => (
@@ -12,6 +13,64 @@ const MehEmoji = () => (
 const FrownEmoji = () => (
   <div className="emoji frown">☹</div>
 );
+
+// Activity Settings Modal Component
+const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
+  const [name, setName] = useState(activity.name);
+  const [weeklyGoalHours, setWeeklyGoalHours] = useState(activity.weeklyGoalHours);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({ ...activity, name, weeklyGoalHours: Number(weeklyGoalHours) });
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content card">
+        <h2 className="modal-title">Edit Activity</h2>
+        <form onSubmit={handleSubmit} className="modal-form">
+          <div className="form-group">
+            <label htmlFor="name">Activity Name</label>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className="input"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="goal">Weekly Goal (hours)</label>
+            <input
+              id="goal"
+              type="number"
+              min="0"
+              step="0.5"
+              value={weeklyGoalHours}
+              onChange={(e) => setWeeklyGoalHours(e.target.value)}
+              className="input"
+              required
+            />
+          </div>
+          <div className="modal-actions">
+            <button type="button" onClick={onDelete} className="delete-button">
+              Delete Activity
+            </button>
+            <div className="modal-buttons">
+              <button type="button" onClick={onClose} className="cancel-button">
+                Cancel
+              </button>
+              <button type="submit" className="save-button">
+                Save Changes
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -35,6 +94,7 @@ function ActivityTracker() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [newActivityGoal, setNewActivityGoal] = useState('');
+  const [editingActivity, setEditingActivity] = useState(null);
 
   useEffect(() => {
     initializeHistory();
@@ -138,6 +198,20 @@ function ActivityTracker() {
     }
   };
 
+  const handleEditActivity = (updatedActivity) => {
+    const activityIndex = activities.findIndex(a => a.name === editingActivity.name);
+    const newActivities = [...activities];
+    newActivities[activityIndex] = updatedActivity;
+    setActivities(newActivities);
+    setEditingActivity(null);
+  };
+
+  const handleDeleteActivity = () => {
+    const newActivities = activities.filter(a => a.name !== editingActivity.name);
+    setActivities(newActivities);
+    setEditingActivity(null);
+  };
+
   return (
     <div className="container">
       <div className="header">
@@ -182,6 +256,7 @@ function ActivityTracker() {
             </div>
           ))}
           <div className="status-header">Status</div>
+          <div className="settings-header"></div>
         </div>
 
         {activities.map((activity, activityIndex) => {
@@ -224,10 +299,28 @@ function ActivityTracker() {
                 {getStatusEmoji(progress)}
                 <span className="progress-text">{progress.toFixed(1)}%</span>
               </div>
+
+              <div className="settings-cell">
+                <button
+                  className="settings-button"
+                  onClick={() => setEditingActivity(activity)}
+                >
+                  <Settings size={16} />
+                </button>
+              </div>
             </div>
           );
         })}
       </div>
+
+      {editingActivity && (
+        <ActivitySettingsModal
+          activity={editingActivity}
+          onSave={handleEditActivity}
+          onDelete={handleDeleteActivity}
+          onClose={() => setEditingActivity(null)}
+        />
+      )}
     </div>
   );
 }
