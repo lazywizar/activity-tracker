@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
+import axios from 'axios';
 
 // Emoji components
 const SmileEmoji = () => (
@@ -72,45 +73,113 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
   );
 };
 
+
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [activities, setActivities] = useState([
-    {
-      name: 'Reading',
-      weeklyGoalHours: 10,
-      history: {}
-    },
-    {
-      name: 'Exercise',
-      weeklyGoalHours: 8,
-      history: {}
-    },
-    {
-      name: 'Meditation',
-      weeklyGoalHours: 5,
-      history: {}
-    }
-  ]);
+  const [activities, setActivities] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [newActivityGoal, setNewActivityGoal] = useState('');
   const [editingActivity, setEditingActivity] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
-    initializeHistory();
+    fetchActivities();
   }, []);
 
-  const initializeHistory = () => {
-    const newActivities = activities.map(activity => ({
-      ...activity,
-      history: {
-        ...activity.history,
-        [formatMonthKey(currentDate)]: {
-          days: Array(getDaysInMonth(currentDate)).fill(0)
-        }
+  const fetchActivities = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/activities`);
+      setActivities(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching activities:', error);
+      setLoading(false);
+    }
+  };
+
+  const addActivity = async () => {
+    if (newActivityName && newActivityGoal) {
+      try {
+        const newActivity = {
+          name: newActivityName,
+          weeklyGoalHours: parseInt(newActivityGoal),
+          history: {
+            [formatMonthKey(currentDate)]: {
+              days: Array(getDaysInMonth(currentDate)).fill(0)
+            }
+          }
+        };
+
+        const response = await axios.post(`${API_BASE_URL}/activities`, newActivity);
+        setActivities([...activities, response.data]);
+        setNewActivityName('');
+        setNewActivityGoal('');
+        setShowAddForm(false);
+      } catch (error) {
+        console.error('Error adding activity:', error);
       }
-    }));
-    setActivities(newActivities);
+    }
+  };
+
+  const handleEditActivity = async (updatedActivity) => {
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/activities/${editingActivity._id}`,
+        updatedActivity
+      );
+      const newActivities = activities.map(a =>
+        a._id === editingActivity._id ? response.data : a
+      );
+      setActivities(newActivities);
+      setEditingActivity(null);
+    } catch (error) {
+      console.error('Error updating activity:', error);
+    }
+  };
+
+  const handleDeleteActivity = async () => {
+    try {
+      await axios.delete(`${API_BASE_URL}/activities/${editingActivity._id}`);
+      const newActivities = activities.filter(a => a._id !== editingActivity._id);
+      setActivities(newActivities);
+      setEditingActivity(null);
+    } catch (error) {
+      console.error('Error deleting activity:', error);
+    }
+  };
+
+  const handleMinutesChange = async (activityIndex, dayIndex, minutes) => {
+    try {
+      const activity = activities[activityIndex];
+      const monthKey = formatMonthKey(currentDate);
+
+      const updatedHistory = {
+        ...activity.history,
+        [monthKey]: {
+          days: activity.history[monthKey]
+            ? [...activity.history[monthKey].days]
+            : Array(getDaysInMonth(currentDate)).fill(0)
+        }
+      };
+      updatedHistory[monthKey].days[dayIndex] = parseInt(minutes) || 0;
+
+      const response = await axios.put(
+        `${API_BASE_URL}/activities/${activity._id}`,
+        {
+          ...activity,
+          history: updatedHistory
+        }
+      );
+
+      const newActivities = [...activities];
+      newActivities[activityIndex] = response.data;
+      setActivities(newActivities);
+    } catch (error) {
+      console.error('Error updating minutes:', error);
+    }
   };
 
   const formatMonthKey = (date) => {
@@ -131,20 +200,6 @@ function ActivityTracker() {
       curr.setDate(curr.getDate() + 1);
     }
     return dates;
-  };
-
-  const handleMinutesChange = (activityIndex, dayIndex, minutes) => {
-    const newActivities = [...activities];
-    const monthKey = formatMonthKey(currentDate);
-
-    if (!newActivities[activityIndex].history[monthKey]) {
-      newActivities[activityIndex].history[monthKey] = {
-        days: Array(getDaysInMonth(currentDate)).fill(0)
-      };
-    }
-
-    newActivities[activityIndex].history[monthKey].days[dayIndex] = parseInt(minutes) || 0;
-    setActivities(newActivities);
   };
 
   const calculateProgress = (activity) => {
@@ -178,39 +233,15 @@ function ActivityTracker() {
     setCurrentDate(newDate);
   };
 
-  const addActivity = () => {
-    if (newActivityName && newActivityGoal) {
-      setActivities([
-        ...activities,
-        {
-          name: newActivityName,
-          weeklyGoalHours: parseInt(newActivityGoal),
-          history: {
-            [formatMonthKey(currentDate)]: {
-              days: Array(getDaysInMonth(currentDate)).fill(0)
-            }
-          }
-        }
-      ]);
-      setNewActivityName('');
-      setNewActivityGoal('');
-      setShowAddForm(false);
-    }
-  };
-
-  const handleEditActivity = (updatedActivity) => {
-    const activityIndex = activities.findIndex(a => a.name === editingActivity.name);
-    const newActivities = [...activities];
-    newActivities[activityIndex] = updatedActivity;
-    setActivities(newActivities);
-    setEditingActivity(null);
-  };
-
-  const handleDeleteActivity = () => {
-    const newActivities = activities.filter(a => a.name !== editingActivity.name);
-    setActivities(newActivities);
-    setEditingActivity(null);
-  };
+  if (loading) {
+    return (
+      <div className="container">
+        <div className="card">
+          <div className="p-4 text-center">Loading activities...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container">
