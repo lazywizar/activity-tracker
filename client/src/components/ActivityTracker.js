@@ -2,17 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import axios from 'axios';
 
-// Emoji components
-const SmileEmoji = () => (
-  <div className="emoji smile">☺</div>
+// Updated Emoji components with color
+const SmileEmoji = ({ color }) => (
+  <div className="emoji smile" style={{ color }}>😊</div>
 );
 
-const MehEmoji = () => (
-  <div className="emoji meh">😐</div>
+const MehEmoji = ({ color }) => (
+  <div className="emoji meh" style={{ color }}>😐</div>
 );
 
-const FrownEmoji = () => (
-  <div className="emoji frown">☹</div>
+const FrownEmoji = ({ color }) => (
+  <div className="emoji frown" style={{ color }}>😟</div>
 );
 
 const isPastDay = (date) => {
@@ -20,6 +20,60 @@ const isPastDay = (date) => {
   today.setHours(0, 0, 0, 0);
   date.setHours(0, 0, 0, 0);
   return date < today;
+};
+
+// Add this new function to calculate expected progress
+const calculateExpectedProgress = (weekDates) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // If we're looking at a past week, expect 100%
+  if (weekDates[6] < today) {
+    return 100;
+  }
+
+  // If we're looking at a future week, expect 0%
+  if (weekDates[0] > today) {
+    return 0;
+  }
+
+  // Count days passed including today
+  let daysPassed = 0;
+  for (const date of weekDates) {
+    date.setHours(0, 0, 0, 0);
+    if (date <= today) {
+      daysPassed++;
+    }
+  }
+
+  return (daysPassed / 7) * 100;
+};
+
+// Update the getStatusEmoji function
+const getStatusEmoji = (actualProgress, expectedProgress) => {
+  // Calculate how well we're doing compared to expected progress
+  // Add a 10% buffer to account for slight variations
+  const progressRatio = actualProgress / (expectedProgress || 1);
+
+  if (progressRatio >= 0.9) {
+    // Doing great - on track or ahead
+    return <SmileEmoji color="#22c55e" />; // green
+  } else if (progressRatio >= 0.6) {
+    // Slightly behind but recoverable
+    return <MehEmoji color="#eab308" />; // yellow
+  } else {
+    // Significantly behind
+    return <FrownEmoji color="#ef4444" />; // red
+  }
+};
+
+// Update the getProgressColor function to use the same logic
+const getProgressColor = (actualProgress, expectedProgress) => {
+  const progressRatio = actualProgress / (expectedProgress || 1);
+
+  if (progressRatio >= 0.9) return 'text-green-600';
+  if (progressRatio >= 0.6) return 'text-yellow-600';
+  return 'text-red-600';
 };
 
 // Activity Settings Modal Component
@@ -283,10 +337,6 @@ function ActivityTracker() {
   };
 
   const handleMinutesChange = async (activityIndex, date, minutes) => {
-    if (isPastDay(new Date(date))) {
-      return; // Prevent editing past days
-    }
-
     try {
       const activity = activities[activityIndex];
       const monthKey = formatMonthKey(date);
@@ -433,6 +483,8 @@ function ActivityTracker() {
 
         {activities.map((activity, activityIndex) => {
           const progress = calculateProgress(activity);
+          const expectedProgress = calculateExpectedProgress(weekDates);
+          const progressColorClass = getProgressColor(progress, expectedProgress);
 
           return (
             <div key={activity._id} className="card activity-row">
@@ -442,46 +494,47 @@ function ActivityTracker() {
               </div>
 
               {weekDates.map((date) => {
-                const monthKey = formatMonthKey(date);
-                const dayIndex = getDayIndex(date);
-                const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
-                const isToday = date.toDateString() === today.toDateString();
-                const isPast = isPastDay(new Date(date));
+            const monthKey = formatMonthKey(date);
+            const dayIndex = getDayIndex(date);
+            const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
+            const isToday = date.toDateString() === today.toDateString();
+            const isPast = isPastDay(new Date(date));
 
-                return (
-                  <div
-                    key={date.toISOString()}
-                    className={`day-cell
-                      ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                      ${isToday ? 'today' : ''}
-                      ${isPast ? 'past' : ''}`}
-                  >
-                    <input
-                      type="number"
-                      value={minutes || ''}
-                      onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                      className="minute-input"
-                      placeholder="0"
-                      disabled={isPast}
-                    />
-                  </div>
-                );
-              })}
-
-              <div className="status-cell">
-                {getStatusEmoji(progress)}
-                <span className="progress-text">{progress.toFixed(1)}%</span>
+            return (
+              <div
+                key={date.toISOString()}
+                className={`day-cell
+                  ${getProgressColor(minutes, activity.weeklyGoalHours)}
+                  ${isToday ? 'today' : ''}
+                  ${isPast ? 'past' : ''}`}
+              >
+                <input
+                  type="number"
+                  value={minutes || ''}
+                  onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
+                  className="minute-input"
+                  placeholder="0"
+                />
               </div>
+            );
+          })}
 
-              <div className="settings-cell">
-                <button
-                  className="settings-button"
-                  onClick={() => setEditingActivity(activity)}
-                >
-                  <Settings size={16} />
-                </button>
-              </div>
-            </div>
+          <div className="status-cell">
+            {getStatusEmoji(progress, expectedProgress)}
+            <span className={`progress-text ${progressColorClass}`}>
+              {progress.toFixed(1)}%
+            </span>
+          </div>
+
+          <div className="settings-cell">
+            <button
+              className="settings-button"
+              onClick={() => setEditingActivity(activity)}
+            >
+              <Settings size={16} />
+            </button>
+          </div>
+        </div>
           );
         })}
       </div>
