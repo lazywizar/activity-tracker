@@ -73,7 +73,6 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
   );
 };
 
-
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activities, setActivities] = useState([]);
@@ -100,17 +99,82 @@ function ActivityTracker() {
     }
   };
 
+  const formatMonthKey = (date) => {
+    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  const getDaysInMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getDayIndex = (date) => {
+    return date.getDate() - 1;
+  };
+
+  const getWeekDates = () => {
+    const dates = [];
+    const curr = new Date(currentDate);
+    // Get Monday of current week
+    const first = curr.getDate() - curr.getDay() + (curr.getDay() === 0 ? -6 : 1);
+    curr.setDate(first);
+
+    // Get all days of the week
+    for (let i = 0; i < 7; i++) {
+      dates.push(new Date(curr));
+      curr.setDate(curr.getDate() + 1);
+    }
+    return dates;
+  };
+
+  const formatDateHeader = (date) => {
+    return {
+      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      date: date.getDate()
+    };
+  };
+
+  const getMonthDisplay = () => {
+    const weekDates = getWeekDates();
+    const firstDate = weekDates[0];
+    const lastDate = weekDates[6];
+
+    if (firstDate.getMonth() === lastDate.getMonth()) {
+      return firstDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+    }
+
+    if (firstDate.getFullYear() === lastDate.getFullYear()) {
+      return `${firstDate.toLocaleString('default', { month: 'short' })} - ${lastDate.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+    }
+
+    return `${firstDate.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${lastDate.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
+  };
+
+  const changeWeek = (delta) => {
+    const newDate = new Date(currentDate);
+    newDate.setDate(newDate.getDate() + (delta * 7));
+    setCurrentDate(newDate);
+  };
+
   const addActivity = async () => {
     if (newActivityName && newActivityGoal) {
       try {
+        const weekDates = getWeekDates();
+        const history = {};
+
+        // Initialize history for all months in the current week
+        weekDates.forEach(date => {
+          const monthKey = formatMonthKey(date);
+          if (!history[monthKey]) {
+            history[monthKey] = {
+              days: Array(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()).fill(0)
+            };
+          }
+        });
+
         const newActivity = {
           name: newActivityName,
           weeklyGoalHours: parseInt(newActivityGoal),
-          history: {
-            [formatMonthKey(currentDate)]: {
-              days: Array(getDaysInMonth(currentDate)).fill(0)
-            }
-          }
+          history
         };
 
         const response = await axios.post(`${API_BASE_URL}/activities`, newActivity);
@@ -151,19 +215,22 @@ function ActivityTracker() {
     }
   };
 
-  const handleMinutesChange = async (activityIndex, dayIndex, minutes) => {
+  const handleMinutesChange = async (activityIndex, date, minutes) => {
     try {
       const activity = activities[activityIndex];
-      const monthKey = formatMonthKey(currentDate);
+      const monthKey = formatMonthKey(date);
+      const dayIndex = getDayIndex(date);
 
+      // Initialize month if it doesn't exist
       const updatedHistory = {
         ...activity.history,
         [monthKey]: {
           days: activity.history[monthKey]
             ? [...activity.history[monthKey].days]
-            : Array(getDaysInMonth(currentDate)).fill(0)
+            : Array(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()).fill(0)
         }
       };
+
       updatedHistory[monthKey].days[dayIndex] = parseInt(minutes) || 0;
 
       const response = await axios.put(
@@ -182,33 +249,19 @@ function ActivityTracker() {
     }
   };
 
-  const formatMonthKey = (date) => {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
-  };
-
-  const getDaysInMonth = (date) => {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
-
-  const getWeekDates = () => {
-    const dates = [];
-    const curr = new Date(currentDate);
-    curr.setDate(curr.getDate() - curr.getDay());
-
-    for (let i = 0; i < 7; i++) {
-      dates.push(new Date(curr));
-      curr.setDate(curr.getDate() + 1);
-    }
-    return dates;
-  };
-
   const calculateProgress = (activity) => {
-    const monthKey = formatMonthKey(currentDate);
-    const currentDay = currentDate.getDate();
-    const weekStart = Math.max(0, currentDay - (currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1));
-    const history = activity.history[monthKey]?.days || Array(getDaysInMonth(currentDate)).fill(0);
-    const weekMinutes = history.slice(weekStart, weekStart + 7).reduce((sum, min) => sum + (min || 0), 0);
-    const weekHours = weekMinutes / 60;
+    const weekDates = getWeekDates();
+    let totalMinutes = 0;
+
+    weekDates.forEach(date => {
+      const monthKey = formatMonthKey(date);
+      const dayIndex = getDayIndex(date);
+      if (activity.history[monthKey]?.days[dayIndex]) {
+        totalMinutes += activity.history[monthKey].days[dayIndex];
+      }
+    });
+
+    const weekHours = totalMinutes / 60;
     return (weekHours / activity.weeklyGoalHours) * 100;
   };
 
@@ -227,12 +280,6 @@ function ActivityTracker() {
     return '';
   };
 
-  const changeMonth = (delta) => {
-    const newDate = new Date(currentDate);
-    newDate.setMonth(newDate.getMonth() + delta);
-    setCurrentDate(newDate);
-  };
-
   if (loading) {
     return (
       <div className="container">
@@ -243,17 +290,18 @@ function ActivityTracker() {
     );
   }
 
+  const weekDates = getWeekDates();
+  const today = new Date();
+
   return (
     <div className="container">
       <div className="header">
         <div className="title-section">
           <h1 className="title">Activities</h1>
           <div className="month-navigation">
-            <button className="nav-button" onClick={() => changeMonth(-1)}>←</button>
-            <span className="current-month">
-              {currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-            </span>
-            <button className="nav-button" onClick={() => changeMonth(1)}>→</button>
+            <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
+            <span className="current-month">{getMonthDisplay()}</span>
+            <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
           </div>
         </div>
         <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
@@ -281,44 +329,45 @@ function ActivityTracker() {
       <div className="activities-grid">
         <div className="week-headers">
           <div className="activity-header">Activity</div>
-          {getWeekDates().map((date) => (
-            <div key={date} className="day-header">
-              {date.toLocaleDateString('en-US', { weekday: 'short' })}
-            </div>
-          ))}
+          {weekDates.map((date) => {
+            const { day, date: dateNum } = formatDateHeader(date);
+            return (
+              <div key={date.toISOString()} className="day-header">
+                <div>{day}</div>
+                <div>{dateNum}</div>
+              </div>
+            );
+          })}
           <div className="status-header">Status</div>
           <div className="settings-header"></div>
         </div>
 
         {activities.map((activity, activityIndex) => {
-          const currentDay = currentDate.getDate();
-          const weekStart = Math.max(0, currentDay - (currentDate.getDay() === 0 ? 6 : currentDate.getDay() - 1));
           const progress = calculateProgress(activity);
 
           return (
-            <div key={activity.name} className="card activity-row">
+            <div key={activity._id} className="card activity-row">
               <div className="activity-info">
                 <div className="activity-name">{activity.name}</div>
                 <div className="activity-goal">{activity.weeklyGoalHours}h goal</div>
               </div>
 
-              {Array.from({ length: 7 }).map((_, dayOffset) => {
-                const dayIndex = weekStart + dayOffset;
-                const monthKey = formatMonthKey(currentDate);
+              {weekDates.map((date) => {
+                const monthKey = formatMonthKey(date);
+                const dayIndex = getDayIndex(date);
                 const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
-                const isToday = dayOffset === new Date().getDay() - 1 &&
-                               currentDate.toDateString() === new Date().toDateString();
+                const isToday = date.toDateString() === today.toDateString();
 
                 return (
                   <div
-                    key={dayOffset}
+                    key={date.toISOString()}
                     className={`day-cell ${getProgressColor(minutes, activity.weeklyGoalHours)}
                               ${isToday ? 'today' : ''}`}
                   >
                     <input
                       type="number"
                       value={minutes || ''}
-                      onChange={(e) => handleMinutesChange(activityIndex, dayIndex, e.target.value)}
+                      onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
                       className="minute-input"
                       placeholder="0"
                     />
