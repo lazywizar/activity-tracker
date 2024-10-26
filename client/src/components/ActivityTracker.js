@@ -342,8 +342,10 @@ function ActivityTracker() {
       const monthKey = formatMonthKey(date);
       const dayIndex = getDayIndex(date);
 
-      const parsedMinutes = parseInt(minutes);
-      if (isNaN(parsedMinutes) || parsedMinutes < 0) {
+      // Handle empty string or null specifically
+      const parsedMinutes = minutes === '' ? 0 : parseInt(minutes);
+      // Only validate if it's not empty
+      if (minutes !== '' && (isNaN(parsedMinutes) || parsedMinutes < 0)) {
         return;
       }
 
@@ -508,12 +510,14 @@ function ActivityTracker() {
                   ${isToday ? 'today' : ''}
                   ${isPast ? 'past' : ''}`}
               >
-                <input
+                 <input
                   type="number"
-                  value={minutes || ''}
+                  value={minutes || ''}  // Changed from minutes to minutes || ''
                   onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
                   className="minute-input"
-                  placeholder="0"
+                  placeholder=""
+                  min="0"
+                  max="999"
                 />
               </div>
             );
