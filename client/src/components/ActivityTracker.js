@@ -15,20 +15,51 @@ const FrownEmoji = () => (
   <div className="emoji frown">☹</div>
 );
 
+const isPastDay = (date) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  date.setHours(0, 0, 0, 0);
+  return date < today;
+};
+
 // Activity Settings Modal Component
 const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
   const [name, setName] = useState(activity.name);
   const [weeklyGoalHours, setWeeklyGoalHours] = useState(activity.weeklyGoalHours);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave({ ...activity, name, weeklyGoalHours: Number(weeklyGoalHours) });
+
+    if (!name.trim()) {
+      setError('Activity name cannot be empty');
+      return;
+    }
+
+    if (isNaN(weeklyGoalHours) || weeklyGoalHours <= 0) {
+      setError('Please enter a valid goal (greater than 0)');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await onSave({ ...activity, name, weeklyGoalHours: Number(weeklyGoalHours) });
+      setError(null);
+    } catch (err) {
+      setError('Failed to save changes. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <div className="modal-overlay">
       <div className="modal-content card">
         <h2 className="modal-title">Edit Activity</h2>
+        {error && (
+          <div className="error-message mb-4 text-red-600 text-sm">{error}</div>
+        )}
         <form onSubmit={handleSubmit} className="modal-form">
           <div className="form-group">
             <label htmlFor="name">Activity Name</label>
@@ -46,7 +77,7 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
             <input
               id="goal"
               type="number"
-              min="0"
+              min="0.5"
               step="0.5"
               value={weeklyGoalHours}
               onChange={(e) => setWeeklyGoalHours(e.target.value)}
@@ -55,15 +86,29 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
             />
           </div>
           <div className="modal-actions">
-            <button type="button" onClick={onDelete} className="delete-button">
+            <button
+              type="button"
+              onClick={onDelete}
+              className="delete-button"
+              disabled={isSubmitting}
+            >
               Delete Activity
             </button>
             <div className="modal-buttons">
-              <button type="button" onClick={onClose} className="cancel-button">
+              <button
+                type="button"
+                onClick={onClose}
+                className="cancel-button"
+                disabled={isSubmitting}
+              >
                 Cancel
               </button>
-              <button type="submit" className="save-button">
-                Save Changes
+              <button
+                type="submit"
+                className="save-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
@@ -81,20 +126,28 @@ function ActivityTracker() {
   const [newActivityGoal, setNewActivityGoal] = useState('');
   const [editingActivity, setEditingActivity] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchActivities();
+    const savedDate = localStorage.getItem('currentDate');
+    if (savedDate) {
+      setCurrentDate(new Date(savedDate));
+    }
   }, []);
 
   const fetchActivities = async () => {
     try {
+      setError(null);
       const response = await axios.get(`${API_BASE_URL}/activities`);
       setActivities(response.data);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching activities:', error);
+      setError('Failed to load activities. Please try again.');
       setLoading(false);
     }
   };
@@ -153,38 +206,52 @@ function ActivityTracker() {
     const newDate = new Date(currentDate);
     newDate.setDate(newDate.getDate() + (delta * 7));
     setCurrentDate(newDate);
+    localStorage.setItem('currentDate', newDate.toISOString());
   };
 
   const addActivity = async () => {
-    if (newActivityName && newActivityGoal) {
-      try {
-        const weekDates = getWeekDates();
-        const history = {};
+    if (!newActivityName.trim()) {
+      setError('Activity name cannot be empty');
+      return;
+    }
 
-        // Initialize history for all months in the current week
-        weekDates.forEach(date => {
-          const monthKey = formatMonthKey(date);
-          if (!history[monthKey]) {
-            history[monthKey] = {
-              days: Array(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()).fill(0)
-            };
-          }
-        });
+    const goalHours = parseFloat(newActivityGoal);
+    if (isNaN(goalHours) || goalHours <= 0) {
+      setError('Please enter a valid goal (greater than 0)');
+      return;
+    }
 
-        const newActivity = {
-          name: newActivityName,
-          weeklyGoalHours: parseInt(newActivityGoal),
-          history
-        };
+    try {
+      setError(null);
+      setIsSubmitting(true);
+      const weekDates = getWeekDates();
+      const history = {};
 
-        const response = await axios.post(`${API_BASE_URL}/activities`, newActivity);
-        setActivities([...activities, response.data]);
-        setNewActivityName('');
-        setNewActivityGoal('');
-        setShowAddForm(false);
-      } catch (error) {
-        console.error('Error adding activity:', error);
-      }
+      weekDates.forEach(date => {
+        const monthKey = formatMonthKey(date);
+        if (!history[monthKey]) {
+          history[monthKey] = {
+            days: Array(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()).fill(0)
+          };
+        }
+      });
+
+      const newActivity = {
+        name: newActivityName.trim(),
+        weeklyGoalHours: goalHours,
+        history
+      };
+
+      const response = await axios.post(`${API_BASE_URL}/activities`, newActivity);
+      setActivities([...activities, response.data]);
+      setNewActivityName('');
+      setNewActivityGoal('');
+      setShowAddForm(false);
+    } catch (error) {
+      console.error('Error adding activity:', error);
+      setError('Failed to add activity. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -216,12 +283,20 @@ function ActivityTracker() {
   };
 
   const handleMinutesChange = async (activityIndex, date, minutes) => {
+    if (isPastDay(new Date(date))) {
+      return; // Prevent editing past days
+    }
+
     try {
       const activity = activities[activityIndex];
       const monthKey = formatMonthKey(date);
       const dayIndex = getDayIndex(date);
 
-      // Initialize month if it doesn't exist
+      const parsedMinutes = parseInt(minutes);
+      if (isNaN(parsedMinutes) || parsedMinutes < 0) {
+        return;
+      }
+
       const updatedHistory = {
         ...activity.history,
         [monthKey]: {
@@ -231,7 +306,7 @@ function ActivityTracker() {
         }
       };
 
-      updatedHistory[monthKey].days[dayIndex] = parseInt(minutes) || 0;
+      updatedHistory[monthKey].days[dayIndex] = parsedMinutes;
 
       const response = await axios.put(
         `${API_BASE_URL}/activities/${activity._id}`,
@@ -258,7 +333,7 @@ function ActivityTracker() {
       const dayIndex = getDayIndex(date);
       if (activity.history[monthKey]?.days[dayIndex]) {
         totalMinutes += activity.history[monthKey].days[dayIndex];
-      }
+    }
     });
 
     const weekHours = totalMinutes / 60;
@@ -307,6 +382,12 @@ function ActivityTracker() {
         <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
       </div>
 
+      {error && (
+        <div className="card error-message">
+          <div className="p-4 text-center text-red-600">{error}</div>
+        </div>
+      )}
+
       {showAddForm && (
         <div className="card add-form">
           <input
@@ -321,8 +402,16 @@ function ActivityTracker() {
             value={newActivityGoal}
             onChange={(e) => setNewActivityGoal(e.target.value)}
             className="input"
+            min="0.5"
+            step="0.5"
           />
-          <button onClick={addActivity} className="save-button">Add</button>
+          <button
+            onClick={addActivity}
+            className="save-button"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Adding...' : 'Add'}
+          </button>
         </div>
       )}
 
@@ -357,12 +446,15 @@ function ActivityTracker() {
                 const dayIndex = getDayIndex(date);
                 const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
                 const isToday = date.toDateString() === today.toDateString();
+                const isPast = isPastDay(new Date(date));
 
                 return (
                   <div
                     key={date.toISOString()}
-                    className={`day-cell ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                              ${isToday ? 'today' : ''}`}
+                    className={`day-cell
+                      ${getProgressColor(minutes, activity.weeklyGoalHours)}
+                      ${isToday ? 'today' : ''}
+                      ${isPast ? 'past' : ''}`}
                   >
                     <input
                       type="number"
@@ -370,6 +462,7 @@ function ActivityTracker() {
                       onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
                       className="minute-input"
                       placeholder="0"
+                      disabled={isPast}
                     />
                   </div>
                 );

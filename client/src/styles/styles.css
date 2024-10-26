@@ -300,23 +300,73 @@ input[type="number"] {
   grid-template-columns: 2fr repeat(7, 1fr) 1fr 40px;
 }
 
-.day-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.today {
+  border: 2px solid #3b82f6 !important;
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.day-cell {
+  min-height: 48px;
+  transition: all 0.2s ease;
+}
+
+.day-cell:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+
+
+/* Add or update these styles in your CSS file */
+.minute-input {
+  width: 100%;
+  text-align: center;
+  border: none;
+  background: transparent;
   font-size: 12px;
+  color: #1f2937;
+  padding: 4px;
+  max-width: 45px; /* Make input boxes smaller */
+}
+
+.minute-input:focus {
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.8);
+}
+
+.day-cell {
+  background: #f9fafb;
+  border-radius: 6px;
+  padding: 4px; /* Reduced padding */
+  height: 36px; /* Reduced height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.day-cell.past {
+  background-color: #f3f4f6;
+}
+
+.day-cell.past .minute-input {
   color: #6b7280;
+  cursor: pointer;
 }
 
-.day-header div:first-child {
-  font-weight: 500;
+.day-cell.past.good { background: rgba(34, 197, 94, 0.1); }
+.day-cell.past.medium { background: rgba(234, 179, 8, 0.1); }
+.day-cell.past.poor { background: rgba(239, 68, 68, 0.1); }
+
+.day-cell.good { background: rgba(34, 197, 94, 0.2); }
+.day-cell.medium { background: rgba(234, 179, 8, 0.2); }
+.day-cell.poor { background: rgba(239, 68, 68, 0.2); }
+
+/* Make the activity row more compact */
+.activity-row {
+  margin-bottom: 8px;
+  padding: 8px 12px;
 }
 
-.day-header div:last-child {
-  font-size: 11px;
-  color: #9ca3af;
-}
-
+/* Adjust header sizes */
 .day-header {
   display: flex;
   flex-direction: column;
@@ -327,30 +377,62 @@ input[type="number"] {
 
 .day-header div:first-child {
   font-weight: 500;
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
 }
 
 .day-header div:last-child {
-  font-size: 11px;
+  font-size: 10px;
   color: #9ca3af;
 }
 
-.today {
-  border: 2px solid #3b82f6 !important;
-  background-color: rgba(59, 130, 246, 0.05);
+/* Add these responsive styles to your CSS */
+@media (max-width: 768px) {
+  .container {
+    padding: 12px;
+  }
+
+  .activities-grid {
+    overflow-x: auto;
+  }
+
+  .week-headers,
+  .activity-row {
+    min-width: 700px; /* Ensure minimum width for scrolling on mobile */
+  }
+
+  .minute-input {
+    max-width: 40px;
+    font-size: 11px;
+  }
+
+  .day-cell {
+    padding: 2px;
+    height: 32px;
+  }
+
+  .activity-name {
+    font-size: 13px;
+  }
+
+  .activity-goal {
+    font-size: 11px;
+  }
 }
 
-.activity-row {
-  margin-bottom: 8px;
-  padding: 12px;
+/* Improve the status cell layout */
+.status-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 70px;
 }
 
-.day-cell {
-  min-height: 48px;
-  transition: all 0.2s ease;
+.progress-text {
+  font-size: 11px;
+  color: #6b7280;
 }
 
-.day-cell:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+.emoji {
+  font-size: 14px;
 }
