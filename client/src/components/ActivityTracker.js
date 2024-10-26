@@ -490,7 +490,7 @@ function ActivityTracker() {
             <div key={activity._id} className="card activity-row">
               <div className="activity-info">
                 <div className="activity-name">{activity.name}</div>
-                <div className="activity-goal">{activity.weeklyGoalHours}h goal</div>
+                <div className="activity-goal">{activity.weeklyGoalHours}h goal/wk</div>
               </div>
 
               {weekDates.map((date) => {
