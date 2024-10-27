@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Settings, ChevronUp, ChevronDown, Download, X } from 'lucide-react';
+import { Settings, ChevronUp, ChevronDown, Download, X , LogOut, MoreVertical} from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from './Auth/AuthContext';
 import '../styles/auth.css';
@@ -727,33 +727,26 @@ function ActivityTracker() {
   return (
     <div className="container">
       <div className="header">
-      <div className="title-section">
-      <div className="flex items-center gap-4">
-        <BrandText size="large" />
-        <div className="month-navigation">
-          <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
-          <span className="current-month">{getMonthDisplay()}</span>
-          <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
+        <div className="title-section">
+          <BrandText size="large" />
+        </div>
+        <div className="flex items-center space-x-1">
+          <button
+            className="add-button"
+            onClick={() => setShowDateRangeModal(true)}
+            title="Download CSV"
+          >
+            <Download size={16} />
+          </button>
+          <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
+          <button
+            className="text-sm text-gray-600 hover:text-gray-800"
+            onClick={logout}
+          >
+            <LogOut size={16} />
+          </button>
         </div>
       </div>
-    </div>
-      <div className="flex items-center space-x-1">
-        <button
-          className="add-button" // reuse the same class as the + button
-          onClick={() => setShowDateRangeModal(true)}
-          title="Download CSV"
-        >
-          <Download size={16} />
-        </button>
-        <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
-        <button
-          className="text-sm text-gray-600 hover:text-gray-800"
-          onClick={logout}
-        >
-          Logout
-        </button>
-      </div>
-    </div>
 
       {error && (
         <div className="card error-message">
@@ -790,7 +783,12 @@ function ActivityTracker() {
 
       <div className="activities-grid">
         <div className="week-headers">
-          <div className="activity-header">Activity</div>
+          <div className="month-navigation">
+              <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
+              <span className="current-month">{getMonthDisplay()}</span>
+              <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
+          </div>
+          {/* <div className="activity-header"></div> */}
           {weekDates.map((date) => {
             const { day, date: dateNum } = formatDateHeader(date);
             return (
@@ -800,7 +798,7 @@ function ActivityTracker() {
               </div>
             );
           })}
-          <div className="status-header">Status</div>
+          <div className="status-header"></div>
           <div className="settings-header"></div>
         </div>
 
@@ -874,7 +872,7 @@ function ActivityTracker() {
                     className="settings-button"
                     onClick={() => setEditingActivity(activity)}
                   >
-                    <Settings size={16} />
+                    <MoreVertical size={16} />
                   </button>
                 </div>
               </div>

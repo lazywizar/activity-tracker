@@ -28,12 +28,13 @@ body {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 32px;
+  line-height: 1; /* Add this to remove extra spacing */
 }
 
 .title-section {
   display: flex;
   align-items: center;
-  gap: 16px;
+  line-height: 1; /* Add this to remove extra spacing */
 }
 
 .title {
@@ -49,7 +50,7 @@ body {
 }
 
 .current-month {
-  width: 150px;
+  width: 100px;
   text-align: center;
   font-size: 14px;
   color: #6b7280;
