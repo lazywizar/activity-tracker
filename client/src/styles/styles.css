@@ -396,34 +396,6 @@ input[type="number"] {
   margin-top: -1px; /* Remove double borders between rows */
 }
 
-.historical-cell {
-  background-color: #ffffff;
-  padding: 0.5rem;
-  height: 2.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.historical-cell .minute-input {
-  width: 100%;
-  height: 100%;
-  text-align: center;
-  background: transparent;
-  border: none;
-  padding: 0;
-}
-
-
-.historical-cell.has-value {
-  background-color: #e5e7eb;
-}
-
-.historical-cell .minute-input:focus {
-  outline: none;
-  background-color: rgba(255, 255, 255, 0.9);
-}
-
 .history-row {
   border-top: none;
   background-color: #fafafa;
@@ -457,4 +429,28 @@ input[type="number"] {
 
 .expand-button:hover {
   background-color: #ffffff;
+}
+
+.download-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  transition: all 0.2s;
+}
+
+.download-button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+/* Update existing modal styles if needed */
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
 }

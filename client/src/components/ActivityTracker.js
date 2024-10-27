@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, ChevronUp, ChevronDown } from 'lucide-react';
+import { Settings, ChevronUp, ChevronDown, Download, X } from 'lucide-react';
 import axios from 'axios';
 
 // Updated Emoji components with color
@@ -172,6 +172,115 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
   );
 };
 
+// Add these new components after your existing modals
+const DateRangeModal = ({ onClose, onDownload }) => {
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [error, setError] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!startDate || !endDate) {
+      setError('Please select both start and end dates');
+      return;
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const twoYearsMs = 2 * 365 * 24 * 60 * 60 * 1000;
+
+    if (end < start) {
+      setError('End date must be after start date');
+      return;
+    }
+
+    if (end - start > twoYearsMs) {
+      setError('Date range cannot exceed 2 years');
+      return;
+    }
+
+    onDownload(start, end);
+  };
+
+  return (
+    <div className="modal-overlay">
+      <div className="modal-content card w-96">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="modal-title">Export Data Range</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700"
+          >
+            <X size={20} />
+          </button>
+        </div>
+        {error && (
+          <div className="error-message mb-4 text-red-600 text-sm">{error}</div>
+        )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="form-group">
+            <label htmlFor="startDate">Start Date</label>
+            <input
+              id="startDate"
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="input"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="endDate">End Date</label>
+            <input
+              id="endDate"
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="input"
+              required
+            />
+          </div>
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="cancel-button"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="save-button"
+            >
+              Download
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+const generateDateRange = (startDate, endDate) => {
+  const dates = [];
+  const currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+};
+
+const formatDateForCSV = (date) => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+};
+
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activities, setActivities] = useState([]);
@@ -183,6 +292,7 @@ function ActivityTracker() {
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedActivities, setExpandedActivities] = useState({});
+  const [showDateRangeModal, setShowDateRangeModal] = useState(false);
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -193,6 +303,47 @@ function ActivityTracker() {
       setCurrentDate(new Date(savedDate));
     }
   }, []);
+
+  const handleDownloadCSV = (startDate, endDate) => {
+    // Generate all dates in range
+    const dateRange = generateDateRange(startDate, endDate);
+
+    // Create CSV header
+    const headers = ['Activity Name', ...dateRange.map(formatDateForCSV)];
+
+    // Create CSV rows
+    const rows = activities.map(activity => {
+      const row = [activity.name];
+
+      dateRange.forEach(date => {
+        const monthKey = formatMonthKey(date);
+        const dayIndex = getDayIndex(date);
+        const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
+        row.push(minutes);
+      });
+
+      return row;
+    });
+    // Combine headers and rows
+    const csvContent = [headers, ...rows]
+      .map(row => row.join(','))
+      .join('\n');
+
+    // Create and trigger download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `activity-data-${formatDateForCSV(startDate)}-to-${formatDateForCSV(endDate)}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    setShowDateRangeModal(false);
+  };
 
   const fetchActivities = async () => {
     try {
@@ -424,14 +575,24 @@ function ActivityTracker() {
     <div className="container">
       <div className="header">
         <div className="title-section">
-          <h1 className="title">Activities</h1>
+          <h1 className="title">Mōmentum</h1>
+
           <div className="month-navigation">
             <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
             <span className="current-month">{getMonthDisplay()}</span>
             <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
           </div>
         </div>
-        <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
+        <div className="flex items-center space-x-1">
+          <button
+            className="add-button" // reuse the same class as the + button
+            onClick={() => setShowDateRangeModal(true)}
+            title="Download CSV"
+          >
+            <Download size={16} />
+          </button>
+          <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
+        </div>
       </div>
 
       {error && (
@@ -541,7 +702,7 @@ function ActivityTracker() {
 
                 <div className="settings-cell flex space-x-2">
                   <button
-                    className="expand-button text-gray-500 hover:text-gray-700"
+                    className="settings-button"
                     onClick={() => setExpandedActivities(prev => ({
                       ...prev,
                       [activity._id]: !prev[activity._id]
@@ -567,7 +728,7 @@ function ActivityTracker() {
                   return (
                     <div key={weeksAgo} className="card activity-row history-row">
                     <div className="activity-info">
-                      <div className="text-sm text-gray-500">
+                      <div className="activity-goal text-gray-500">
                         {pastWeekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                         -
                         {pastWeekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -583,7 +744,7 @@ function ActivityTracker() {
                       return (
                         <div
                           key={date.toISOString()}
-                          className={`day-cell historical-cell
+                          className={`day-cell
                             ${getProgressColor(minutes, activity.weeklyGoalHours)}
                             ${isPast ? 'past' : ''}`}
                         >
@@ -624,6 +785,12 @@ function ActivityTracker() {
           onSave={handleEditActivity}
           onDelete={handleDeleteActivity}
           onClose={() => setEditingActivity(null)}
+        />
+      )}
+      {showDateRangeModal && (
+        <DateRangeModal
+          onClose={() => setShowDateRangeModal(false)}
+          onDownload={handleDownloadCSV}
         />
       )}
     </div>
