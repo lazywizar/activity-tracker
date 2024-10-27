@@ -176,6 +176,19 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Add this with your other activity routes
+app.get('/api/activities', authenticateToken, async (req, res) => {
+  log('ACTIVITY', '→ Fetching for user:', req.user._id);
+  try {
+    const activities = await Activity.find({ user: req.user._id });
+    log('ACTIVITY', '✓ Found:', `count=${activities?.length || 0}`);
+    res.json(activities);
+  } catch (error) {
+    log('ACTIVITY', '✗ Fetch error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Protected Routes - Activities
 app.post('/api/activities', authenticateToken, async (req, res) => {
   try {
