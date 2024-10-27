@@ -4,6 +4,7 @@ import axios from 'axios';
 import { useAuth } from './Auth/AuthContext';
 import '../styles/auth.css';
 import '../styles/styles.css';
+import BrandText from './BrandText';
 
 // Updated Emoji components with color
 const SmileEmoji = ({ color }) => (
@@ -578,15 +579,16 @@ function ActivityTracker() {
   return (
     <div className="container">
       <div className="header">
-        <div className="title-section">
-          <h1 className="title">Mōmentum</h1>
-
-          <div className="month-navigation">
-            <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
-            <span className="current-month">{getMonthDisplay()}</span>
-            <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
-          </div>
-        </div>
+      <div className="title-section">
+  <div className="flex items-center gap-4">
+    <BrandText size="large" />
+    <div className="month-navigation">
+      <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
+      <span className="current-month">{getMonthDisplay()}</span>
+      <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
+    </div>
+  </div>
+</div>
         <div className="flex items-center space-x-1">
           <button
             className="add-button" // reuse the same class as the + button
@@ -672,7 +674,7 @@ function ActivityTracker() {
               <div className="card activity-row">
                 <div className="activity-info">
                   <div className="activity-name">{activity.name}</div>
-                  <div className="activity-goal">{activity.weeklyGoalHours}h goal/wk</div>
+                  <div className="activity-goal">{activity.weeklyGoalHours}h goal / wk</div>
                 </div>
 
                 {weekDates.map((date) => {

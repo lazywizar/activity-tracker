@@ -5,6 +5,8 @@ import { AuthProvider, useAuth } from './components/Auth/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { RegisterForm } from './components/Auth/RegisterForm';
 import './styles/input.css';
+import ForgotPasswordForm from './components/Auth/ForgotPasswordForm';
+
 
 // Protected Route wrapper
 const ProtectedRoute = ({ children }) => {
@@ -27,6 +29,7 @@ const App = () => {
       <Routes>
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegisterForm />} />
+        <Route path="/forgot-password" element={<ForgotPasswordForm />} />
         <Route
           path="/dashboard"
           element={

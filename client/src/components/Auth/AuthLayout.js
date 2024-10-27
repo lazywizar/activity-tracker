@@ -1,4 +1,5 @@
 import React from 'react';
+import BrandText from '../BrandText';
 
 const AuthLayout = ({ children }) => {
   return (
@@ -8,7 +9,7 @@ const AuthLayout = ({ children }) => {
           {/* Logo and branding */}
           <div className="text-center space-y-2">
             <h1 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Mōmentum
+              <BrandText size="large" />
             </h1>
           </div>
 

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Mail, Lock, Loader2 } from 'lucide-react';
 import AuthLayout from './AuthLayout';  // Import the new layout
+import BrandText from '../BrandText';
 
 export const RegisterForm = () => {
   const [email, setEmail] = useState('');
@@ -38,7 +39,7 @@ export const RegisterForm = () => {
   return (
     <AuthLayout>
         <div className="text-center space-y-2 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+          <h2 className="text-2xl font-bold text-gray-900">Welcome to <BrandText /></h2>
           <p className="text-gray-500">Track your daily progress and build momentum</p>
         </div>
           <form onSubmit={handleSubmit} className="space-y-6">
