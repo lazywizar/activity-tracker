@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings } from 'lucide-react';
+import { Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import axios from 'axios';
 
 // Updated Emoji components with color
@@ -182,6 +182,7 @@ function ActivityTracker() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [expandedActivities, setExpandedActivities] = useState({});
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -488,57 +489,132 @@ function ActivityTracker() {
           const expectedProgress = calculateExpectedProgress(weekDates);
           const progressColorClass = getProgressColor(progress, expectedProgress);
 
+          const getPastWeekDates = (weeksAgo) => {
+            return weekDates.map(date => {
+              const newDate = new Date(date);
+              newDate.setDate(date.getDate() - (7 * weeksAgo));
+              return newDate;
+            });
+          };
+
           return (
-            <div key={activity._id} className="card activity-row">
-              <div className="activity-info">
-                <div className="activity-name">{activity.name}</div>
-                <div className="activity-goal">{activity.weeklyGoalHours}h goal/wk</div>
+            <div key={activity._id}>
+              <div className="card activity-row">
+                <div className="activity-info">
+                  <div className="activity-name">{activity.name}</div>
+                  <div className="activity-goal">{activity.weeklyGoalHours}h goal/wk</div>
+                </div>
+
+                {weekDates.map((date) => {
+                  const monthKey = formatMonthKey(date);
+                  const dayIndex = getDayIndex(date);
+                  const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
+                  const isToday = date.toDateString() === today.toDateString();
+                  const isPast = isPastDay(new Date(date));
+
+                  return (
+                    <div
+                      key={date.toISOString()}
+                      className={`day-cell
+                        ${getProgressColor(minutes, activity.weeklyGoalHours)}
+                        ${isToday ? 'today' : ''}
+                        ${isPast ? 'past' : ''}`}
+                    >
+                      <input
+                        type="number"
+                        value={minutes || ''}
+                        onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
+                        className="minute-input"
+                        placeholder=""
+                        min="0"
+                        max="999"
+                      />
+                    </div>
+                  );
+                })}
+
+                <div className="status-cell">
+                  {getStatusEmoji(progress, expectedProgress)}
+                  <span className={`progress-text ${progressColorClass}`}>
+                    {progress.toFixed(1)}%
+                  </span>
+                </div>
+
+                <div className="settings-cell flex space-x-2">
+                  <button
+                    className="expand-button text-gray-500 hover:text-gray-700"
+                    onClick={() => setExpandedActivities(prev => ({
+                      ...prev,
+                      [activity._id]: !prev[activity._id]
+                    }))}
+                  >
+                    {expandedActivities[activity._id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                  </button>
+                  <button
+                    className="settings-button"
+                    onClick={() => setEditingActivity(activity)}
+                  >
+                    <Settings size={16} />
+                  </button>
+                </div>
               </div>
 
-              {weekDates.map((date) => {
-            const monthKey = formatMonthKey(date);
-            const dayIndex = getDayIndex(date);
-            const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
-            const isToday = date.toDateString() === today.toDateString();
-            const isPast = isPastDay(new Date(date));
+              {/* Past weeks rows */}
+              {expandedActivities[activity._id] && [1, 2, 3].map(weeksAgo => {
+                const pastWeekDates = getPastWeekDates(weeksAgo);
+                const weekProgress = calculateProgress(activity, pastWeekDates);
+                const weekProgressClass = getProgressColor(weekProgress, 100); // Past weeks expect 100%
 
-            return (
-              <div
-                key={date.toISOString()}
-                className={`day-cell
-                  ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                  ${isToday ? 'today' : ''}
-                  ${isPast ? 'past' : ''}`}
-              >
-                 <input
-                  type="number"
-                  value={minutes || ''}  // Changed from minutes to minutes || ''
-                  onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                  className="minute-input"
-                  placeholder=""
-                  min="0"
-                  max="999"
-                />
-              </div>
-            );
-          })}
+                return (
+                  <div key={weeksAgo} className="card activity-row history-row">
+                    <div className="activity-info">
+                      <div className="text-sm text-gray-500">
+                        {pastWeekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        -
+                        {pastWeekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      </div>
+                    </div>
 
-          <div className="status-cell">
-            {getStatusEmoji(progress, expectedProgress)}
-            <span className={`progress-text ${progressColorClass}`}>
-              {progress.toFixed(1)}%
-            </span>
-          </div>
+                    {pastWeekDates.map((date) => {
+                      const monthKey = formatMonthKey(date);
+                      const dayIndex = getDayIndex(date);
+                      const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
+                      const isPast = isPastDay(new Date(date));
 
-          <div className="settings-cell">
-            <button
-              className="settings-button"
-              onClick={() => setEditingActivity(activity)}
-            >
-              <Settings size={16} />
-            </button>
-          </div>
-        </div>
+                      return (
+                        <div
+                          key={date.toISOString()}
+                          className={`day-cell historical-cell
+                            ${getProgressColor(minutes, activity.weeklyGoalHours)}
+                            ${isPast ? 'past' : ''}`}
+                        >
+                          <input
+                            type="number"
+                            value={minutes || ''}
+                            onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
+                            className="minute-input"
+                            placeholder=""
+                            min="0"
+                            max="999"
+                          />
+                        </div>
+                      );
+                    })}
+
+                    <div className="status-cell">
+                      {getStatusEmoji(weekProgress, 100)}
+                      <span className={`progress-text ${weekProgressClass}`}>
+                        {weekProgress.toFixed(1)}%
+                      </span>
+                    </div>
+
+                    <div className="settings-cell">
+                      {/* Empty cell to maintain grid alignment */}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           );
         })}
       </div>
