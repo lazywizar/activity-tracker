@@ -458,3 +458,11 @@ input[type="number"] {
   max-height: 90vh;
   overflow-y: auto;
 }
+
+.auth-button {
+  background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
+}
+
+.auth-button:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
