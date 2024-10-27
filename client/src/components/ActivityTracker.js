@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, ChevronUp, ChevronDown, Download, X } from 'lucide-react';
 import axios from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from './Auth/AuthContext';
 import '../styles/auth.css';
 import '../styles/styles.css';
 

@@ -1,8 +1,9 @@
 // src/components/Auth/RegisterForm.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from './AuthContext';
 import { Mail, Lock, Loader2 } from 'lucide-react';
+import AuthLayout from './AuthLayout';  // Import the new layout
 
 export const RegisterForm = () => {
   const [email, setEmail] = useState('');
@@ -35,23 +36,11 @@ export const RegisterForm = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
-      <div className="w-full max-w-md mx-4">
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
-          {/* Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-4xl font-extrabold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              Mōmentum
-            </h1>
-            <h2 className="text-2xl font-bold text-gray-900">
-              Create your account
-            </h2>
-            <p className="text-gray-500">
-              Start tracking your daily progress
-            </p>
-          </div>
-
-          {/* Form */}
+    <AuthLayout>
+        <div className="text-center space-y-2 mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
+          <p className="text-gray-500">Track your daily progress and build momentum</p>
+        </div>
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
               <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
@@ -72,8 +61,8 @@ export const RegisterForm = () => {
                   type="email"
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg
-                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                           text-gray-900 placeholder-gray-400 text-sm"
+                            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                            text-gray-900 placeholder-gray-400 text-sm"
                   placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -94,8 +83,8 @@ export const RegisterForm = () => {
                   type="password"
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg
-                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                           text-gray-900 placeholder-gray-400 text-sm"
+                            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                            text-gray-900 placeholder-gray-400 text-sm"
                   placeholder="Create a password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -116,8 +105,8 @@ export const RegisterForm = () => {
                   type="password"
                   required
                   className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg
-                           focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                           text-gray-900 placeholder-gray-400 text-sm"
+                            focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
+                            text-gray-900 placeholder-gray-400 text-sm"
                   placeholder="Confirm your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -129,11 +118,11 @@ export const RegisterForm = () => {
               type="submit"
               disabled={isLoading}
               className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium
-                       text-white bg-gradient-to-r from-indigo-600 to-purple-600
-                       rounded-lg hover:from-indigo-700 hover:to-purple-700
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       transition-colors duration-200"
+                        text-white bg-gradient-to-r from-indigo-600 to-purple-600
+                        rounded-lg hover:from-indigo-700 hover:to-purple-700
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
+                        disabled:opacity-50 disabled:cursor-not-allowed
+                        transition-colors duration-200"
             >
               {isLoading ? (
                 <div className="flex items-center">
@@ -159,15 +148,13 @@ export const RegisterForm = () => {
             <Link
               to="/login"
               className="w-full flex justify-center px-4 py-2 text-sm font-medium
-                       text-indigo-600 bg-indigo-50 rounded-lg
-                       hover:bg-indigo-100 transition-colors duration-200
-                       focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                        text-indigo-600 bg-indigo-50 rounded-lg
+                        hover:bg-indigo-100 transition-colors duration-200
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
               Sign in instead
             </Link>
           </form>
-        </div>
-      </div>
-    </div>
+    </AuthLayout>
   );
 };
