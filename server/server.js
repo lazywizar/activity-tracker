@@ -19,13 +19,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use((req, res, next) => {
-  debugLog('Request', 'Incoming request', {
-    method: req.method,
-    path: req.path,
-    body: req.body,
-    query: req.query,
-    headers: req.headers
-  });
+  log('REQUEST', `${req.method} ${req.path}`);
   next();
 });
 
@@ -291,12 +285,7 @@ app.get('/api/auth/verify', authenticateToken, async (req, res) => {
 // PORT=5000 (optional)
 
 app.use((err, req, res, next) => {
-  debugLog('Error', 'Unhandled error', {
-    error: err.message,
-    stack: err.stack,
-    path: req.path,
-    method: req.method
-  });
+  log('ERROR', `${req.method} ${req.path}:`, err.message);
   res.status(500).json({ message: 'Internal server error' });
 });
 
