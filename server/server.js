@@ -61,6 +61,7 @@ const userSchema = new mongoose.Schema({
 // Activity Schema
 const activitySchema = new mongoose.Schema({
   name: { type: String, required: true },
+  description: { type: String },  // Add this line
   weeklyGoalHours: { type: Number, required: true },
   history: {
     type: Map,
@@ -222,6 +223,7 @@ app.put('/api/activities/:id', authenticateToken, async (req, res) => {
 
     activity.name = req.body.name || activity.name;
     activity.weeklyGoalHours = req.body.weeklyGoalHours || activity.weeklyGoalHours;
+    activity.description = req.body.description;
     activity.history = req.body.history || activity.history;
 
     const updatedActivity = await activity.save();

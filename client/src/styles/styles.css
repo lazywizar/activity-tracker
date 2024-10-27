@@ -477,3 +477,43 @@ input[type="number"] {
 .auth-button:hover {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
 }
+
+/* Add to your styles.css */
+.activity-name-container {
+  position: relative;
+  display: inline-block;
+}
+
+.activity-tooltip {
+  visibility: hidden;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  background-color: #1f2937;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  white-space: pre-wrap;
+  max-width: 250px;
+  z-index: 50;
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.activity-name-container:hover .activity-tooltip {
+  visibility: visible;
+  opacity: 0.8;
+}
+
+/* Add a small arrow to the tooltip */
+.activity-tooltip::before {
+  content: '';
+  position: absolute;
+  bottom: 100%;
+  left: 20px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: transparent transparent #1f2937 transparent;
+}

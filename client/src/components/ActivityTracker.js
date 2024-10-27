@@ -94,6 +94,7 @@ const getProgressColor = (actualProgress, expectedProgress) => {
 // Activity Settings Modal Component
 const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
   const [name, setName] = useState(activity.name);
+  const [description, setDescription] = useState(activity.description || '');
   const [weeklyGoalHours, setWeeklyGoalHours] = useState(activity.weeklyGoalHours);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -113,7 +114,7 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
 
     setIsSubmitting(true);
     try {
-      await onSave({ ...activity, name, weeklyGoalHours: Number(weeklyGoalHours) });
+      await onSave({ ...activity, name, description, weeklyGoalHours: Number(weeklyGoalHours) });
       setError(null);
     } catch (err) {
       setError('Failed to save changes. Please try again.');
@@ -139,6 +140,16 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
               onChange={(e) => setName(e.target.value)}
               className="input"
               required
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="description">Description</label>
+            <textarea
+              id="description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="input min-h-[80px] resize-y"
+              placeholder="Add a description for this activity..."
             />
           </div>
           <div className="form-group">
@@ -301,6 +312,7 @@ function ActivityTracker() {
   const [activities, setActivities] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
+  const [newActivityDescription, setNewActivityDescription] = useState('');
   const [newActivityGoal, setNewActivityGoal] = useState('');
   const [editingActivity, setEditingActivity] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -515,11 +527,11 @@ function ActivityTracker() {
     const lastDate = weekDates[6];
 
     if (firstDate.getMonth() === lastDate.getMonth()) {
-      return firstDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      return firstDate.toLocaleString('default', { month: 'short', year: 'numeric' });
     }
 
     if (firstDate.getFullYear() === lastDate.getFullYear()) {
-      return `${firstDate.toLocaleString('default', { month: 'short' })} - ${lastDate.toLocaleString('default', { month: 'long', year: 'numeric' })}`;
+      return `${firstDate.toLocaleString('default', { month: 'short' })} - ${lastDate.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
     }
 
     return `${firstDate.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${lastDate.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
@@ -766,6 +778,12 @@ function ActivityTracker() {
             onChange={(e) => setNewActivityName(e.target.value)}
             className="input"
           />
+          <textarea
+            placeholder="Activity Description (optional)"
+            value={newActivityDescription}
+            onChange={(e) => setNewActivityDescription(e.target.value)}
+            className="input min-h-[80px] resize-y"
+          />
           <input
             type="number"
             placeholder="Weekly Goal (hours)"
@@ -823,7 +841,14 @@ function ActivityTracker() {
             <div key={activity._id}>
               <div className="card activity-row">
                 <div className="activity-info">
-                  <div className="activity-name">{activity.name}</div>
+                  <div className="activity-name-container">
+                    <div className="activity-name">{activity.name}</div>
+                    {activity.description && (
+                      <div className="activity-tooltip">
+                        {activity.description}
+                      </div>
+                    )}
+                  </div>
                   <div className="activity-goal">{activity.weeklyGoalHours} hr goal / wk</div>
                 </div>
 
