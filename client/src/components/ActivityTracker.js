@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Settings, ChevronUp, ChevronDown, Download, X } from 'lucide-react';
 import axios from 'axios';
+import { useAuth } from '../context/AuthContext';
+import '../styles/auth.css';
+import '../styles/styles.css';
 
 // Updated Emoji components with color
 const SmileEmoji = ({ color }) => (
@@ -293,6 +296,7 @@ function ActivityTracker() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedActivities, setExpandedActivities] = useState({});
   const [showDateRangeModal, setShowDateRangeModal] = useState(false);
+  const { user, logout } = useAuth();
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
@@ -592,6 +596,12 @@ function ActivityTracker() {
             <Download size={16} />
           </button>
           <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
+          <button
+            className="text-sm text-gray-600 hover:text-gray-800"
+            onClick={logout}
+          >
+            Logout
+          </button>
         </div>
       </div>
 

@@ -1,7 +1,15 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
-import ActivityTracker from './components/ActivityTracker';
+import { BrowserRouter as Router } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import App from './App';
 import './styles/styles.css';
 
 const root = createRoot(document.getElementById('root'));
-root.render(<ActivityTracker />);
+root.render(
+  <Router>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  </Router>
+);
