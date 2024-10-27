@@ -36,6 +36,12 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  resetToken: {
+    type: String
+  },
+  resetTokenExpiry: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -235,6 +241,85 @@ app.delete('/api/activities/:id', authenticateToken, async (req, res) => {
     res.json({ message: 'Activity deleted' });
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      // Return success even if email doesn't exist for security
+      return res.json({ message: 'If an account exists, a password reset link will be sent' });
+    }
+
+    // Generate reset token
+    const resetToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // In a real application, you would:
+    // 1. Save the reset token to the user record with an expiration
+    // 2. Send an email with a link containing the token
+    // 3. Create a reset password page that verifies the token
+
+    res.json({ message: 'If an account exists, a password reset link will be sent' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      // For security, don't reveal whether the email exists or not
+      return res.json({
+        message: 'If an account exists with this email, a password reset link will be sent.'
+      });
+    }
+
+    // Generate reset token (expires in 1 hour)
+    const resetToken = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+
+    // In a real production app, you would:
+    // 1. Save the reset token to the user record
+    // 2. Send an email with the reset link
+    // For now, we'll just console log the token
+    console.log('Reset token for', email, ':', resetToken);
+
+    // Send response
+    res.json({
+      message: 'If an account exists with this email, a password reset link will be sent.'
+    });
+
+  } catch (error) {
+    console.error('Password reset error:', error);
+    res.status(500).json({
+      message: 'An error occurred while processing your request.'
+    });
+  }
+});
+
+app.get('/api/auth/verify', authenticateToken, async (req, res) => {
+  try {
+    // Token is already verified in authenticateToken middleware
+    // Just return the user data
+    const user = await User.findById(req.user._id).select('-password');
+    res.json({ user });
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token' });
   }
 });
 
