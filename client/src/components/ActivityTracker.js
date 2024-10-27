@@ -9,15 +9,30 @@ import { debounce } from 'lodash';
 
 // Updated Emoji components with color
 const SmileEmoji = ({ color }) => (
-  <div className="emoji smile" style={{ color }}>😊</div>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2"/>
+    <path d="M6.5 12.5C6.5 12.5 7.5 14 10 14C12.5 14 13.5 12.5 13.5 12.5" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="7" cy="8" r="1" fill={color}/>
+    <circle cx="13" cy="8" r="1" fill={color}/>
+  </svg>
 );
 
 const MehEmoji = ({ color }) => (
-  <div className="emoji meh" style={{ color }}>😐</div>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2"/>
+    <line x1="7" y1="12" x2="13" y2="12" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="7" cy="8" r="1" fill={color}/>
+    <circle cx="13" cy="8" r="1" fill={color}/>
+  </svg>
 );
 
 const FrownEmoji = ({ color }) => (
-  <div className="emoji frown" style={{ color }}>😟</div>
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2"/>
+    <path d="M6.5 13.5C6.5 13.5 7.5 12 10 12C12.5 12 13.5 13.5 13.5 13.5" stroke={color} strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="7" cy="8" r="1" fill={color}/>
+    <circle cx="13" cy="8" r="1" fill={color}/>
+  </svg>
 );
 
 const isPastDay = (date) => {
@@ -55,19 +70,14 @@ const calculateExpectedProgress = (weekDates) => {
 };
 
 // Update the getStatusEmoji function
-const getStatusEmoji = (actualProgress, expectedProgress) => {
-  // Calculate how well we're doing compared to expected progress
-  // Add a 10% buffer to account for slight variations
-  const progressRatio = actualProgress / (expectedProgress || 1);
+const getStatusEmoji = (progress, expectedProgress) => {
+  const progressRatio = progress / (expectedProgress || 1);
 
   if (progressRatio >= 0.9) {
-    // Doing great - on track or ahead
     return <SmileEmoji color="#22c55e" />; // green
   } else if (progressRatio >= 0.6) {
-    // Slightly behind but recoverable
     return <MehEmoji color="#eab308" />; // yellow
   } else {
-    // Significantly behind
     return <FrownEmoji color="#ef4444" />; // red
   }
 };
@@ -693,12 +703,6 @@ function ActivityTracker() {
 
     const weekHours = totalMinutes / 60;
     return (weekHours / activity.weeklyGoalHours) * 100;
-  };
-
-  const getStatusEmoji = (percentage) => {
-    if (percentage >= 90) return <SmileEmoji />;
-    if (percentage >= 50) return <MehEmoji />;
-    return <FrownEmoji />;
   };
 
   const getProgressColor = (minutes, goalHours) => {

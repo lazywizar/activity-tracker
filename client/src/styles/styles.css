@@ -209,9 +209,18 @@ input[type="number"] {
 .status-cell {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 4px;
   min-width: 70px;
+  padding: 0 4px;
+}
+
+.status-emoji {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; /* Fixed width container for emoji */
+  flex-shrink: 0; /* Prevent emoji from shrinking */
 }
 
 .emoji {
@@ -220,6 +229,7 @@ input[type="number"] {
 
 .progress-text {
   font-size: 11px;
+  min-width: 42px; /* Fixed width for percentage text */
   color: #6b7280;
 }
 
