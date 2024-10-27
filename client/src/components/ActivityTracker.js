@@ -377,16 +377,15 @@ function ActivityTracker() {
     }
   };
 
-  const calculateProgress = (activity) => {
-    const weekDates = getWeekDates();
+  const calculateProgress = (activity, dates = getWeekDates()) => {
     let totalMinutes = 0;
 
-    weekDates.forEach(date => {
+    dates.forEach(date => {
       const monthKey = formatMonthKey(date);
       const dayIndex = getDayIndex(date);
       if (activity.history[monthKey]?.days[dayIndex]) {
         totalMinutes += activity.history[monthKey].days[dayIndex];
-    }
+      }
     });
 
     const weekHours = totalMinutes / 60;
@@ -561,12 +560,12 @@ function ActivityTracker() {
 
               {/* Past weeks rows */}
               {expandedActivities[activity._id] && [1, 2, 3].map(weeksAgo => {
-                const pastWeekDates = getPastWeekDates(weeksAgo);
-                const weekProgress = calculateProgress(activity, pastWeekDates);
-                const weekProgressClass = getProgressColor(weekProgress, 100); // Past weeks expect 100%
+                  const pastWeekDates = getPastWeekDates(weeksAgo);
+                  const weekProgress = calculateProgress(activity, pastWeekDates); // Now passing the correct dates
+                  const weekProgressClass = getProgressColor(weekProgress, 100);
 
-                return (
-                  <div key={weeksAgo} className="card activity-row history-row">
+                  return (
+                    <div key={weeksAgo} className="card activity-row history-row">
                     <div className="activity-info">
                       <div className="text-sm text-gray-500">
                         {pastWeekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
