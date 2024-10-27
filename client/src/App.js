@@ -17,51 +17,57 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    // Save the attempted URL for redirecting after login
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   return children;
 };
 
-const App = () => {
+// Create a separate component for routes to use useAuth hook
+const AppRoutes = () => {
   const { isAuthenticated } = useAuth();
 
   return (
+    <Routes>
+      {/* Public routes */}
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ?
+          <Navigate to="/" replace /> :
+          <LoginForm />
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          isAuthenticated ?
+          <Navigate to="/" replace /> :
+          <RegisterForm />
+        }
+      />
+      <Route path="/forgot-password" element={<ForgotPasswordForm />} />
+
+      {/* Protected routes */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <ActivityTracker />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch-all route redirects to root */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+};
+
+const App = () => {
+  return (
     <AuthProvider>
-      <Routes>
-        {/* Public routes */}
-        <Route
-          path="/login"
-          element={
-            isAuthenticated ?
-            <Navigate to="/" replace /> :
-            <LoginForm />
-          }
-        />
-        <Route
-          path="/register"
-          element={
-            isAuthenticated ?
-            <Navigate to="/" replace /> :
-            <RegisterForm />
-          }
-        />
-        <Route path="/forgot-password" element={<ForgotPasswordForm />} />
-
-        {/* Protected routes */}
-        <Route
-          path="/"
-          element={
-            <ProtectedRoute>
-              <ActivityTracker />
-            </ProtectedRoute>
-          }
-        />
-
-        {/* Catch-all route redirects to root */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+      <AppRoutes />
     </AuthProvider>
   );
 };
