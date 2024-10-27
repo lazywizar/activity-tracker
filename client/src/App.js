@@ -64,6 +64,25 @@ const AppRoutes = () => {
   );
 };
 
+useEffect(() => {
+  const pingServer = async () => {
+    try {
+      await axios.get(`${process.env.REACT_APP_API_URL}/api/health`);
+    } catch (error) {
+      console.error('Health check failed:', error);
+    }
+  };
+
+  // Ping every 5 minutes (300000 ms)
+  const interval = setInterval(pingServer, 300000);
+
+  // Initial ping
+  pingServer();
+
+  // Cleanup
+  return () => clearInterval(interval);
+}, []);
+
 const App = () => {
   return (
     <AuthProvider>

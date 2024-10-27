@@ -292,6 +292,15 @@ app.get('/api/auth/verify', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/api/health', (req, res) => {
+  log('HEALTH', '✓ Health check ping received');
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime())
+  });
+});
+
 // Environment Variables needed in .env file:
 // MONGODB_URI=your_mongodb_connection_string
 // JWT_SECRET=your_jwt_secret_key
