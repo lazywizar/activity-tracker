@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Settings, ChevronUp, ChevronDown, Download, X } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from './Auth/AuthContext';
 import '../styles/auth.css';
 import '../styles/styles.css';
 import BrandText from './BrandText';
+import { debounce } from 'lodash';
 
 // Updated Emoji components with color
 const SmileEmoji = ({ color }) => (
@@ -298,8 +299,109 @@ function ActivityTracker() {
   const [expandedActivities, setExpandedActivities] = useState({});
   const [showDateRangeModal, setShowDateRangeModal] = useState(false);
   const { user, logout } = useAuth();
+  const [pendingUpdates, setPendingUpdates] = useState(new Set());
+  const pendingChangesRef = useRef({});
+  const saveAttemptsRef = useRef({});  // Track save attempts
 
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
+  const updateActivity = async (activityId, updatedHistory, source = 'direct') => {
+    console.log(`🔄 [${source}] Attempting to save activity ${activityId}`, {
+      pendingUpdates: Array.from(pendingUpdates),
+      history: updatedHistory,
+      attempts: saveAttemptsRef.current[activityId] || 0
+    });
+
+    try {
+      // Increment save attempts
+      saveAttemptsRef.current[activityId] = (saveAttemptsRef.current[activityId] || 0) + 1;
+
+      const response = await axios.put(
+        `${API_BASE_URL}/activities/${activityId}`,
+        {
+          history: updatedHistory
+        }
+      );
+
+      console.log(`✅ [${source}] Successfully saved activity ${activityId}`, {
+        responseData: response.data,
+        attempts: saveAttemptsRef.current[activityId]
+      });
+
+      // Update local state with the response
+      const newActivities = activities.map(a =>
+        a._id === activityId ? response.data : a
+      );
+      setActivities(newActivities);
+
+      // Clear pending state for this activity
+      setPendingUpdates(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(activityId);
+        return newSet;
+      });
+      delete pendingChangesRef.current[activityId];
+      delete saveAttemptsRef.current[activityId];
+
+    } catch (error) {
+      console.error(`❌ [${source}] Failed to save activity ${activityId}`, {
+        error,
+        attempts: saveAttemptsRef.current[activityId]
+      });
+      setError('Failed to save changes. Please try again.');
+
+      // If we've tried less than 3 times, retry the save
+      if (saveAttemptsRef.current[activityId] < 3) {
+        console.log(`🔄 Retrying save for activity ${activityId} (Attempt ${saveAttemptsRef.current[activityId]})`);
+        setTimeout(() => updateActivity(activityId, updatedHistory, 'retry'), 1000);
+      }
+    }
+  };
+
+  // Create a debounced version with shorter timeout
+  const debouncedUpdate = useCallback(
+    debounce((activityId, updatedHistory) => {
+      updateActivity(activityId, updatedHistory, 'debounced');
+    }, 100), // Increased slightly to 100ms for better grouping of rapid changes
+    []
+  );
+
+  // Save pending changes before unload
+  useEffect(() => {
+    const handleBeforeUnload = async (e) => {
+      if (pendingUpdates.size > 0) {
+        console.log('💾 Saving pending changes before unload', {
+          pendingUpdates: Array.from(pendingUpdates),
+          pendingChanges: pendingChangesRef.current
+        });
+
+        // Cancel any pending debounced updates
+        debouncedUpdate.cancel();
+
+        // Save all pending changes
+        const promises = Array.from(pendingUpdates).map(activityId => {
+          const changes = pendingChangesRef.current[activityId];
+          if (changes) {
+            return updateActivity(activityId, changes, 'unload');
+          }
+        });
+
+        try {
+          await Promise.all(promises);
+          console.log('✅ Successfully saved all pending changes before unload');
+        } catch (error) {
+          console.error('❌ Error saving pending changes before unload:', error);
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      // Also clean up any pending debounced calls
+      debouncedUpdate.cancel();
+    };
+  }, [pendingUpdates]);
 
   useEffect(() => {
     fetchActivities();
@@ -493,45 +595,90 @@ function ActivityTracker() {
     }
   };
 
-  const handleMinutesChange = async (activityIndex, date, minutes) => {
+  const handleMinutesChange = (activityIndex, date, minutes) => {
     try {
       const activity = activities[activityIndex];
       const monthKey = formatMonthKey(date);
       const dayIndex = getDayIndex(date);
 
+      console.log('📝 Handling minutes change', {
+        activityId: activity._id,
+        monthKey,
+        dayIndex,
+        minutes,
+        previousValue: activity.history[monthKey]?.days[dayIndex]
+      });
+
       // Handle empty string or null specifically
       const parsedMinutes = minutes === '' ? 0 : parseInt(minutes);
       // Only validate if it's not empty
       if (minutes !== '' && (isNaN(parsedMinutes) || parsedMinutes < 0)) {
+        console.log('❌ Invalid minutes value:', minutes);
         return;
       }
 
-      const updatedHistory = {
-        ...activity.history,
-        [monthKey]: {
-          days: activity.history[monthKey]
-            ? [...activity.history[monthKey].days]
-            : Array(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()).fill(0)
-        }
-      };
+      // Update local state immediately for responsive UI
+      const updatedActivities = [...activities];
+      const updatedActivity = { ...activity };
 
-      updatedHistory[monthKey].days[dayIndex] = parsedMinutes;
+      if (!updatedActivity.history[monthKey]) {
+        updatedActivity.history[monthKey] = {
+          days: Array(getDaysInMonth(date)).fill(0)
+        };
+      }
 
-      const response = await axios.put(
-        `${API_BASE_URL}/activities/${activity._id}`,
-        {
-          ...activity,
-          history: updatedHistory
-        }
-      );
+      updatedActivity.history[monthKey].days[dayIndex] = parsedMinutes;
+      updatedActivities[activityIndex] = updatedActivity;
+      setActivities(updatedActivities);
 
-      const newActivities = [...activities];
-      newActivities[activityIndex] = response.data;
-      setActivities(newActivities);
+      // Track pending update
+      setPendingUpdates(prev => new Set(prev).add(activity._id));
+      pendingChangesRef.current[activity._id] = updatedActivity.history;
+
+      console.log('🔄 Queuing update', {
+        activityId: activity._id,
+        pendingUpdates: Array.from(pendingUpdates),
+        newValue: parsedMinutes
+      });
+
+      // Trigger debounced update
+      debouncedUpdate(activity._id, updatedActivity.history);
+
     } catch (error) {
-      console.error('Error updating minutes:', error);
+      console.error('❌ Error in handleMinutesChange:', error);
+      setError('Failed to update minutes. Please try again.');
     }
   };
+
+  // Add periodic check for stuck updates
+  useEffect(() => {
+    const checkStuckUpdates = () => {
+      if (pendingUpdates.size > 0) {
+        console.log('🔍 Checking for stuck updates', {
+          pendingUpdates: Array.from(pendingUpdates),
+          pendingChanges: pendingChangesRef.current
+        });
+
+        // Force save any updates that have been pending for too long
+        Array.from(pendingUpdates).forEach(activityId => {
+          const changes = pendingChangesRef.current[activityId];
+          if (changes) {
+            updateActivity(activityId, changes, 'stuck-check');
+          }
+        });
+      }
+    };
+
+    const interval = setInterval(checkStuckUpdates, 5000); // Check every 5 seconds
+    return () => clearInterval(interval);
+  }, [pendingUpdates]);
+
+  // Clean up debounced function on component unmount
+  useEffect(() => {
+    return () => {
+      debouncedUpdate.cancel();
+    };
+  }, [debouncedUpdate]);
 
   const calculateProgress = (activity, dates = getWeekDates()) => {
     let totalMinutes = 0;
@@ -576,36 +723,37 @@ function ActivityTracker() {
   const weekDates = getWeekDates();
   const today = new Date();
 
+  const isPendingSave = pendingUpdates.size > 0;
   return (
     <div className="container">
       <div className="header">
       <div className="title-section">
-  <div className="flex items-center gap-4">
-    <BrandText size="large" />
-    <div className="month-navigation">
-      <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
-      <span className="current-month">{getMonthDisplay()}</span>
-      <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
-    </div>
-  </div>
-</div>
-        <div className="flex items-center space-x-1">
-          <button
-            className="add-button" // reuse the same class as the + button
-            onClick={() => setShowDateRangeModal(true)}
-            title="Download CSV"
-          >
-            <Download size={16} />
-          </button>
-          <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
-          <button
-            className="text-sm text-gray-600 hover:text-gray-800"
-            onClick={logout}
-          >
-            Logout
-          </button>
+      <div className="flex items-center gap-4">
+        <BrandText size="large" />
+        <div className="month-navigation">
+          <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
+          <span className="current-month">{getMonthDisplay()}</span>
+          <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
         </div>
       </div>
+    </div>
+      <div className="flex items-center space-x-1">
+        <button
+          className="add-button" // reuse the same class as the + button
+          onClick={() => setShowDateRangeModal(true)}
+          title="Download CSV"
+        >
+          <Download size={16} />
+        </button>
+        <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
+        <button
+          className="text-sm text-gray-600 hover:text-gray-800"
+          onClick={logout}
+        >
+          Logout
+        </button>
+      </div>
+    </div>
 
       {error && (
         <div className="card error-message">
@@ -674,7 +822,7 @@ function ActivityTracker() {
               <div className="card activity-row">
                 <div className="activity-info">
                   <div className="activity-name">{activity.name}</div>
-                  <div className="activity-goal">{activity.weeklyGoalHours}h goal / wk</div>
+                  <div className="activity-goal">{activity.weeklyGoalHours} hr goal / wk</div>
                 </div>
 
                 {weekDates.map((date) => {
