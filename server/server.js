@@ -23,16 +23,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/activity-tracker', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-}).then(() => {
-  log('DATABASE', '✓ Connected to MongoDB');
-}).catch((err) => {
-  log('DATABASE', '✗ Connection failed:', err.message);
-});
-
 // User Schema
 const userSchema = new mongoose.Schema({
   email: {
@@ -303,15 +293,33 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Environment Variables needed in .env file:
-// MONGODB_URI=your_mongodb_connection_string
-// JWT_SECRET=your_jwt_secret_key
-// PORT=5000 (optional)
-
 app.use((err, req, res, next) => {
   log('ERROR', `${req.method} ${req.path}:`, err.message);
   res.status(500).json({ message: 'Internal server error' });
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Move the server startup into an async function
+const startServer = async () => {
+  try {
+    // First connect to MongoDB
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/activity-tracker', {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    log('DATABASE', '✓ Connected to MongoDB');
+
+    // Only start the server after successful DB connection
+    app.listen(PORT, () => {
+      log('SERVER', `✓ Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    log('DATABASE', '✗ Connection failed:', err.message);
+    log('SERVER', '✗ Server startup aborted due to database connection failure');
+    process.exit(1);
+  }
+};
+
+// Initialize the server
+startServer();
