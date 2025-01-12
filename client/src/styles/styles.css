@@ -98,105 +98,104 @@ body {
   font-size: 14px;
 }
 
-/* Activities grid */
+/* Activities grid styles */
 .activities-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 16px;
 }
 
-.week-headers {
+.week-headers,
+.activity-row {
   display: grid;
-  grid-template-columns: 2fr repeat(7, 1fr) 1fr 40px;
-  gap: 8px;
-  padding: 0 16px;
-}
-
-.activity-header, .day-header, .status-header {
-  font-size: 12px;
-  color: #6b7280;
-  text-align: center;
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(60px, 1fr)) minmax(80px, 1fr) minmax(60px, 1fr);
+  gap: 4px;
+  align-items: center;
+  min-width: min-content;
 }
 
 .activity-row {
-  display: grid;
-  grid-template-columns: 2fr repeat(7, 1fr) 1fr 40px;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-  padding: 8px 12px;
+  position: relative;
 }
 
-.activity-info {
+.day-header {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  text-align: center;
+  min-width: 60px;
+  height: 100%;
 }
 
-.activity-name {
-  font-size: 14px;
+.day-header div:first-child {
   font-weight: 500;
-}
-
-.activity-goal {
   font-size: 12px;
   color: #6b7280;
 }
 
-/* Day cell styles */
+.day-header div:last-child {
+  font-size: 11px;
+  color: #9ca3af;
+}
+
 .day-cell {
-  background: #f9fafb;
-  border-radius: 6px;
-  padding: 2px;  /* reduced from 4px */
-  height: 32px;  /* reduced from 36px */
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 32px;  /* reduced from 48px */
-  transition: all 0.2s ease;
+  padding: 4px;
+  min-width: 60px;
+  height: 36px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  background-color: #f3f4f6;  /* Default gray background */
 }
 
 .day-cell:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  filter: brightness(0.95);
 }
 
 .day-cell.today {
-  border: 2px solid #3b82f6 !important;
+  border: 2px solid #3b82f6;
   background-color: rgba(59, 130, 246, 0.05);
 }
 
 .day-cell.past {
-  background-color: #f3f4f6;
-  opacity: 0.9;
+  opacity: 0.95;
 }
 
 .day-cell.past .minute-input {
   color: #6b7280;
-  cursor: text;
 }
 
-.day-cell.past.good { background: rgba(34, 197, 94, 0.1); }
-.day-cell.past.medium { background: rgba(234, 179, 8, 0.1); }
-.day-cell.past.poor { background: rgba(239, 68, 68, 0.1); }
+.day-cell.past.good { background: rgba(34, 197, 94, 0.15); }
+.day-cell.past.medium { background: rgba(234, 179, 8, 0.15); }
+.day-cell.past.poor { background: rgba(239, 68, 68, 0.15); }
 
-.day-cell.good { background: rgba(34, 197, 94, 0.2); }
-.day-cell.medium { background: rgba(234, 179, 8, 0.2); }
-.day-cell.poor { background: rgba(239, 68, 68, 0.2); }
+.day-cell.good { background: rgba(34, 197, 94, 0.25); }
+.day-cell.medium { background: rgba(234, 179, 8, 0.25); }
+.day-cell.poor { background: rgba(239, 68, 68, 0.25); }
 
-/* Minute input styles */
 .minute-input {
   width: 100%;
+  max-width: 48px;
+  height: 28px;
+  padding: 4px;
   text-align: center;
   border: none;
+  border-radius: 4px;
+  font-size: 13px;
   background: transparent;
-  font-size: 11px;  /* reduced from 12px */
   color: #1f2937;
-  padding: 2px;  /* reduced from 4px */
-  max-width: 32px;  /* reduced from 45px */
+  transition: all 0.2s;
 }
 
 .minute-input:focus {
   outline: none;
-  background-color: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 /* Hide number input spinners */
@@ -276,6 +275,8 @@ input[type="number"] {
   width: 100%;
   max-width: 400px;
   margin: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .modal-title {
@@ -370,33 +371,74 @@ input[type="number"] {
 /* Responsive styles */
 @media (max-width: 768px) {
   .container {
-    padding: 12px;
+    padding: 8px;
   }
 
   .activities-grid {
-    overflow-x: auto;
+    margin: 0 -8px;
+    padding: 0 8px;
   }
 
   .week-headers,
   .activity-row {
-    min-width: 700px;
-  }
-
-  .minute-input {
-    max-width: 28px;
-    font-size: 11px;
+    grid-template-columns: minmax(100px, 1.5fr) repeat(7, minmax(50px, 1fr)) minmax(70px, 1fr) minmax(50px, 1fr);
+    gap: 2px;
   }
 
   .day-cell {
-    padding: 1px;
-    height: 28px;
+    min-width: 50px;
+    height: 32px;
+    padding: 2px;
+  }
+
+  .minute-input {
+    max-width: 40px;
+    height: 24px;
+    font-size: 12px;
+    padding: 2px;
+  }
+
+  .day-header {
+    min-width: 50px;
+    padding: 4px 2px;
+  }
+
+  .day-header div:first-child {
+    font-size: 11px;
+  }
+
+  .day-header div:last-child {
+    font-size: 10px;
   }
 
   .activity-name {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .activity-goal {
+    font-size: 10px;
+  }
+
+  .status-cell {
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(80px, 1fr) repeat(7, minmax(45px, 1fr)) minmax(60px, 1fr) minmax(45px, 1fr);
+    gap: 1px;
+  }
+
+  .day-cell {
+    min-width: 45px;
+    height: 30px;
+  }
+
+  .minute-input {
+    max-width: 36px;
+    height: 22px;
     font-size: 11px;
   }
 }
