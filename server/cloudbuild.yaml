@@ -28,3 +28,6 @@ steps:
 
 images:
   - 'gcr.io/mymomentumapp/momentum-server'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
