@@ -3,7 +3,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 
-
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
@@ -13,15 +12,13 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing token on mount
     const initializeAuth = async () => {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
       const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
 
       if (token && storedUser) {
-        // First check if token is expired
         if (isTokenExpired(token)) {
-          // Clear everything if token is expired
+          console.error('Token expired during initialization');
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           sessionStorage.removeItem('token');
@@ -32,16 +29,14 @@ export const AuthProvider = ({ children }) => {
         }
 
         try {
-          // Verify token is still valid with the backend
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-          // Make a request to verify the token
           await axios.get(`${process.env.REACT_APP_API_URL}/auth/verify`);
+          console.log('Token verified successfully');
 
           setUser(JSON.parse(storedUser));
           setIsAuthenticated(true);
         } catch (error) {
-          // If token is invalid, clear everything
+          console.error('Error verifying token:', error);
           localStorage.removeItem('token');
           localStorage.removeItem('user');
           sessionStorage.removeItem('token');
@@ -55,6 +50,47 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
+  useEffect(() => {
+    const interceptor = axios.interceptors.request.use(
+      (config) => {
+        const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.request.eject(interceptor);
+    };
+  }, []);
+
+  useEffect(() => {
+    const interceptor = axios.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        if (error.response?.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          setUser(null);
+          setIsAuthenticated(false);
+          navigate('/login');
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    return () => {
+      axios.interceptors.response.eject(interceptor);
+    };
+  }, [navigate]);
+
   const login = async (email, password, rememberMe) => {
     try {
       const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
@@ -64,7 +100,6 @@ export const AuthProvider = ({ children }) => {
 
       const { token, user } = response.data;
 
-      // Check if token is valid before storing
       if (isTokenExpired(token)) {
         return {
           success: false,
@@ -72,13 +107,11 @@ export const AuthProvider = ({ children }) => {
         };
       }
 
-      // Clear both storages first
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       sessionStorage.removeItem('token');
       sessionStorage.removeItem('user');
 
-      // Use localStorage for "remember me", sessionStorage otherwise
       const storage = rememberMe ? localStorage : sessionStorage;
       storage.setItem('token', token);
       storage.setItem('user', JSON.stringify(user));
@@ -96,7 +129,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Add periodic token check
   useEffect(() => {
     const checkToken = async () => {
       const token = localStorage.getItem('token') || sessionStorage.getItem('token');
@@ -105,7 +137,7 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    const interval = setInterval(checkToken, 60000); // Check every minute
+    const interval = setInterval(checkToken, 60000); 
     return () => clearInterval(interval);
   }, []);
 
@@ -130,7 +162,7 @@ export const AuthProvider = ({ children }) => {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(user);
       setIsAuthenticated(true);
-      navigate('/dashboard'); // Redirect to main app after registration
+      navigate('/dashboard'); 
       return { success: true };
     } catch (error) {
       return {
@@ -143,9 +175,18 @@ export const AuthProvider = ({ children }) => {
   const isTokenExpired = (token) => {
     try {
       const decoded = jwtDecode(token);
-      if (!decoded) return true;
-      return decoded.exp * 1000 < Date.now();
+      if (!decoded.exp) {
+        console.error('Token has no expiration');
+        return true;
+      }
+      const currentTime = Date.now() / 1000;
+      const isExpired = decoded.exp < currentTime;
+      if (isExpired) {
+        console.error('Token is expired');
+      }
+      return isExpired;
     } catch (error) {
+      console.error('Error decoding token:', error);
       return true;
     }
   };
@@ -160,21 +201,6 @@ export const AuthProvider = ({ children }) => {
     setIsAuthenticated(false);
     navigate('/login');
   };
-
-  // Add axios interceptor to handle 401 errors
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          logout();
-        }
-        return Promise.reject(error);
-      }
-    );
-
-    return () => axios.interceptors.response.eject(interceptor);
-  }, []);
 
   return (
     <AuthContext.Provider value={{

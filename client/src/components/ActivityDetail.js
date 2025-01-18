@@ -90,7 +90,6 @@ function ActivityDetail() {
     const dayIndex = getDayIndex(date);
     
     try {
-      const token = localStorage.getItem('token');
       const updatedActivity = {
         ...activity,
         history: {
@@ -107,18 +106,18 @@ function ActivityDetail() {
 
       await axios.put(
         `${process.env.REACT_APP_API_URL}/activities/${id}`,
-        updatedActivity,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
+        updatedActivity
       );
+      
       setActivity(updatedActivity);
       generateChartData(updatedActivity);
     } catch (error) {
       console.error('Error updating activity:', error);
-      // Optionally show an error message to the user
+      if (error.response?.status === 401) {
+        setError('Please log in to update this activity');
+      } else {
+        setError('Failed to update activity. Please try again.');
+      }
     }
   };
 
@@ -149,24 +148,25 @@ function ActivityDetail() {
       try {
         setLoading(true);
         setError(null);
-        const token = localStorage.getItem('token');
-        const response = await axios.get(`${process.env.REACT_APP_API_URL}/activities/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/activities/${id}`);
         setActivity(response.data);
         generateChartData(response.data);
         generatePastWeeks(response.data);
       } catch (error) {
         console.error('Error fetching activity:', error);
-        setError(error.response?.data?.message || 'Failed to load activity');
+        if (error.response?.status === 401) {
+          setError('Please log in to view this activity');
+        } else {
+          setError(error.response?.data?.message || 'Failed to load activity');
+        }
       } finally {
         setLoading(false);
       }
     };
 
-    fetchActivity();
+    if (id) {
+      fetchActivity();
+    }
   }, [id]);
 
   if (loading) {
