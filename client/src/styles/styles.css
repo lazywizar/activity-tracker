@@ -608,3 +608,28 @@ body {
   border-style: solid;
   border-color: transparent transparent #1f2937 transparent;
 }
+
+/* Activity row styles */
+.activity-row {
+  @apply grid grid-cols-[2fr_repeat(7,1fr)_0.8fr_0.4fr] gap-2 p-4 mb-2;
+}
+
+.history-row {
+  @apply px-4 py-1 mb-1 text-sm opacity-75;
+}
+
+.history-row .minute-input {
+  @apply text-sm py-0.5;
+}
+
+.history-row .progress-text {
+  @apply text-sm;
+}
+
+.history-row .activity-goal {
+  @apply text-xs;
+}
+
+.history-row .day-cell {
+  @apply flex items-center justify-end;
+}

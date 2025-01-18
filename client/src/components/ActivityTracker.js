@@ -658,6 +658,7 @@ function ActivityTracker() {
                               onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
                               isFirstColumn={false}
                               isToday={false}
+                              isHistorical={true}
                             />
                           </div>
                         );
