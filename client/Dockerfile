@@ -13,6 +13,9 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+# Set environment variable for production build
+ENV REACT_APP_API_URL=https://momentum-server-302823411886.us-central1.run.app/api
+
 # Build the static files
 RUN npm run build
 
