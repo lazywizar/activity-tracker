@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Settings, ChevronUp, ChevronDown, Download, X, LogOut, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from './Auth/AuthContext';
+import { Link } from 'react-router-dom'; // Import Link from react-router-dom
 import '../styles/auth.css';
 import '../styles/styles.css';
 import BrandText from './BrandText';
@@ -485,16 +486,16 @@ function ActivityTracker() {
       {showAddForm && (
         <div className="card add-form">
           <input
-            placeholder="Activity Name"
+            placeholder="Activity Name*"
             value={newActivityName}
             onChange={(e) => setNewActivityName(e.target.value)}
             className="input"
           />
-          <textarea
+          <input
             placeholder="Activity Description (optional)"
             value={newActivityDescription}
             onChange={(e) => setNewActivityDescription(e.target.value)}
-            className="input min-h-[80px] resize-y"
+            className="input resize-x"
           />
           <input
             type="number"
@@ -559,18 +560,21 @@ function ActivityTracker() {
             };
 
             return (
-              <div key={activity._id}>
+              <div key={activity._id} className="mb-4">
                 <div className="card activity-row">
                   <div className="activity-info">
-                    <div className="activity-name-container">
-                      <div className="activity-name">{activity.name}</div>
-                      {activity.description && (
-                        <div className="activity-tooltip">
-                          {activity.description}
-                        </div>
-                      )}
+                    <Link
+                      to={`/activity/${activity._id}`}
+                      className="activity-name hover:text-blue-600 hover:underline"
+                    >
+                      {activity.name}
+                    </Link>
+                    {activity.description && (
+                      <div className="activity-description">{activity.description}</div>
+                    )}
+                    <div className="activity-goal text-gray-500">
+                      Goal: {activity.weeklyGoalHours} mins/week
                     </div>
-                    <div className="activity-goal">{activity.weeklyGoalHours} hr goal / wk</div>
                   </div>
 
                   {weekDates.map((date) => {
@@ -599,9 +603,9 @@ function ActivityTracker() {
                   })}
 
                   <div className="status-cell">
-                    {getStatusEmoji(progress, expectedProgress)}
-                    <span className={`progress-text ${progressColorClass}`}>
-                      {progress.toFixed(1)}%
+                    <span className="emoji">{getStatusEmoji(progress, expectedProgress)}</span>
+                    <span className={`progress-text text-progress-${progressColorClass}`}>
+                      {progress.toFixed(0)}%
                     </span>
                   </div>
 
@@ -665,7 +669,7 @@ function ActivityTracker() {
                       })}
 
                       <div className="status-cell">
-                        {getStatusEmoji(weekProgress, 100)}
+                        <span className="emoji">{getStatusEmoji(weekProgress, 100)}</span>
                         <span className={`progress-text ${weekProgressClass}`}>
                           {weekProgress.toFixed(1)}%
                         </span>

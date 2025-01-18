@@ -107,39 +107,45 @@ body {
   padding-bottom: 12px;
 }
 
-.week-headers,
-.activity-row {
+.week-headers {
   display: grid;
-  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(60px, 1fr)) minmax(70px, 1fr) minmax(45px, 1fr);
-  gap: 4px;
-  align-items: center;
-  min-width: min-content;
-}
-
-.activity-row {
-  position: relative;
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(60px, 1fr)) minmax(70px, 0.8fr) minmax(45px, 0.4fr);
+  gap: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .day-header {
+  @apply text-sm text-gray-600;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 4px;
-  text-align: center;
+  width: 100%;
+  padding: 6px 0;
   min-width: 60px;
-  height: 100%;
 }
 
-.day-header div:first-child {
-  font-weight: 500;
-  font-size: 12px;
-  color: #6b7280;
+.day-header > div:first-child {
+  @apply font-medium;
 }
 
-.day-header div:last-child {
-  font-size: 11px;
-  color: #9ca3af;
+.day-header > div:last-child {
+  @apply text-gray-400;
+  font-size: 0.75rem;
+}
+
+.day-cell {
+  @apply flex items-center justify-center;
+  width: 100%;
+  min-width: 60px;
+}
+
+.activity-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(60px, 1fr)) minmax(70px, 0.8fr) minmax(45px, 0.4fr);
+  gap: 8px;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
 }
 
 .day-cell {
@@ -197,30 +203,41 @@ body {
 
 /* Status cell styles */
 .status-cell {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 4px;
-  min-width: 60px;
-  padding: 0 4px;
+  @apply flex items-center gap-2;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  min-width: 90px;
 }
 
-.status-emoji {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px; /* Fixed width container for emoji */
-  flex-shrink: 0; /* Prevent emoji from shrinking */
+.status-cell .emoji {
+  font-size: 1.5rem;
+  line-height: 1;
+  filter: saturate(1.2) brightness(1.1);
+  transform: scale(1);
+  transition: transform 0.2s ease;
 }
 
-.emoji {
-  font-size: 14px;
+.status-cell:hover .emoji {
+  transform: scale(1.2);
 }
 
 .progress-text {
-  font-size: 11px;
-  min-width: 42px; /* Fixed width for percentage text */
-  color: #6b7280;
+  @apply text-xs font-normal text-gray-600 tabular-nums;
+  min-width: 42px;
+  letter-spacing: -0.02em;
+  font-feature-settings: "tnum";
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+}
+
+.text-progress-red {
+  @apply text-red-500/75;
+}
+
+.text-progress-yellow {
+  @apply text-yellow-500/75;
+}
+
+.text-progress-green {
+  @apply text-emerald-500/75;
 }
 
 /* Settings styles */
@@ -341,19 +358,41 @@ body {
   padding: 4px 0;
 }
 
-.day-header div:first-child {
-  font-weight: 500;
-  font-size: 11px;
-  color: #6b7280;
+.activity-row {
+  @apply grid gap-2 p-4 mb-2;
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(60px, 1fr)) minmax(70px, 0.8fr) minmax(45px, 0.4fr);
 }
 
-.grid-cols-9 {
-  grid-template-columns: 100px repeat(7, 1fr) 100px;
+.history-row {
+  @apply px-4 py-1 mb-1 text-sm opacity-75;
+  display: grid;
+  align-items: center;
+  border-top: none;
+  background-color: #fafafa;
+  margin-top: -1px; /* Remove double borders between rows */
 }
 
-.day-header div:last-child {
-  font-size: 10px;
-  color: #9ca3af;
+.history-row .activity-info {
+  @apply flex;
+  text-align: left;
+}
+
+.history-row .activity-goal {
+  @apply text-xs text-gray-500;
+}
+
+.history-row .minute-input {
+  @apply text-sm py-0.5;
+  width: 100%;
+}
+
+.history-row .progress-text {
+  @apply text-sm;
+}
+
+.history-row .day-cell {
+  @apply flex items-center justify-center;
+  width: 100%;
 }
 
 /* Responsive styles */
@@ -369,34 +408,25 @@ body {
 
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(100px, 1.5fr) repeat(7, minmax(50px, 1fr)) minmax(60px, 1fr) minmax(40px, 1fr);
-    gap: 2px;
-  }
-
-  .day-cell {
-    min-width: 50px;
-    height: 28px;
-    padding: 2px;
-  }
-
-  .minute-input {
-    max-width: 40px;
-    height: 22px;
-    font-size: 12px;
-    padding: 2px;
+    grid-template-columns: minmax(100px, 1.5fr) repeat(7, minmax(50px, 1fr)) minmax(60px, 0.8fr) minmax(40px, 0.4fr);
+    gap: 4px;
   }
 
   .day-header {
     min-width: 50px;
-    padding: 4px 2px;
+    padding: 4px 0;
   }
 
-  .day-header div:first-child {
-    font-size: 11px;
+  .day-cell {
+    min-width: 50px;
   }
 
-  .day-header div:last-child {
-    font-size: 10px;
+  .day-header > div:first-child {
+    font-size: 0.75rem;
+  }
+
+  .day-header > div:last-child {
+    font-size: 0.7rem;
   }
 
   .activity-name {
@@ -432,19 +462,30 @@ body {
 @media (max-width: 480px) {
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(80px, 1fr) repeat(7, minmax(45px, 1fr)) minmax(55px, 1fr) minmax(35px, 1fr);
-    gap: 1px;
+    grid-template-columns: minmax(80px, 1.2fr) repeat(7, minmax(40px, 1fr)) minmax(50px, 0.8fr) minmax(35px, 0.4fr);
+    gap: 2px;
+  }
+
+  .day-header {
+    min-width: 40px;
+    padding: 3px 0;
   }
 
   .day-cell {
-    min-width: 45px;
-    height: 26px;
+    min-width: 40px;
+  }
+
+  .day-header > div:first-child {
+    font-size: 0.7rem;
+  }
+
+  .day-header > div:last-child {
+    font-size: 0.65rem;
   }
 
   .minute-input {
-    max-width: 36px;
-    height: 20px;
-    font-size: 11px;
+    font-size: 0.75rem;
+    padding: 2px;
   }
 
   .card {
@@ -467,74 +508,6 @@ body {
   .settings-button {
     padding: 4px;
   }
-}
-
-.activity-wrapper {
-  margin-bottom: 0.5rem;
-}
-
-.history-row {
-  border-top: none;
-  background-color: #fafafa;
-}
-
-.history-row {
-  border-top: none;
-  background-color: #fafafa;
-  margin-top: -1px; /* Remove double borders between rows */
-}
-
-.history-row {
-  border-top: none;
-  background-color: #fafafa;
-  margin-top: -1px;
-}
-
-.past-weeks {
-  animation: slideDown 0.2s ease-out;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.expand-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
-  border: none;
-  border-radius: 0.25rem;
-  transition: all 0.2s;
-}
-
-.expand-button:hover {
-  background-color: #ffffff;
-}
-
-.download-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background-color: white;
-  border: 1px solid #e5e7eb;
-  color: #6b7280;
-  transition: all 0.2s;
-}
-
-.download-button:hover {
-  background-color: #f3f4f6;
-  color: #374151;
 }
 
 /* Update existing modal styles if needed */
@@ -593,12 +566,6 @@ body {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
-.activity-name-container:hover .activity-tooltip {
-  visibility: visible;
-  opacity: 0.8;
-}
-
-/* Add a small arrow to the tooltip */
 .activity-tooltip::before {
   content: '';
   position: absolute;
@@ -609,27 +576,58 @@ body {
   border-color: transparent transparent #1f2937 transparent;
 }
 
-/* Activity row styles */
-.activity-row {
-  @apply grid grid-cols-[2fr_repeat(7,1fr)_0.8fr_0.4fr] gap-2 p-4 mb-2;
+.activity-name-container:hover .activity-tooltip {
+  visibility: visible;
+  opacity: 0.8;
 }
 
-.history-row {
-  @apply px-4 py-1 mb-1 text-sm opacity-75;
+.activity-wrapper {
+  margin-bottom: 0.5rem;
 }
 
-.history-row .minute-input {
-  @apply text-sm py-0.5;
+.expand-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+  border: none;
+  border-radius: 0.25rem;
+  transition: all 0.2s;
 }
 
-.history-row .progress-text {
-  @apply text-sm;
+.expand-button:hover {
+  background-color: #ffffff;
 }
 
-.history-row .activity-goal {
-  @apply text-xs;
+.download-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  color: #6b7280;
+  transition: all 0.2s;
 }
 
-.history-row .day-cell {
-  @apply flex items-center justify-end;
+.download-button:hover {
+  background-color: #f3f4f6;
+  color: #374151;
+}
+
+.past-weeks {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

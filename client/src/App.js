@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import ActivityTracker from './components/ActivityTracker';
+import ActivityDetail from './components/ActivityDetail';
 import { AuthProvider, useAuth } from './components/Auth/AuthContext';
 import { LoginForm } from './components/Auth/LoginForm';
 import { RegisterForm } from './components/Auth/RegisterForm';
@@ -54,6 +55,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <ActivityTracker />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/activity/:id"
+        element={
+          <ProtectedRoute>
+            <ActivityDetail />
           </ProtectedRoute>
         }
       />

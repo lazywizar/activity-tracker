@@ -180,6 +180,24 @@ app.get('/api/activities', authenticateToken, async (req, res) => {
   }
 });
 
+app.get('/api/activities/:id', authenticateToken, async (req, res) => {
+  log('ACTIVITY', '→ Fetching single activity:', req.params.id);
+  try {
+    const activity = await Activity.findOne({ _id: req.params.id, user: req.user._id });
+    
+    if (!activity) {
+      log('ACTIVITY', '✗ Not found:', req.params.id);
+      return res.status(404).json({ message: 'Activity not found' });
+    }
+    
+    log('ACTIVITY', '✓ Found activity:', activity.name);
+    res.json(activity);
+  } catch (error) {
+    log('ACTIVITY', '✗ Fetch error:', error.message);
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Protected Routes - Activities
 app.post('/api/activities', authenticateToken, async (req, res) => {
   try {
