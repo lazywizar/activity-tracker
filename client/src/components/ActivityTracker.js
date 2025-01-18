@@ -656,7 +656,7 @@ function ActivityTracker() {
                             <MinutesInput
                               value={minutes || ''}
                               onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                              isFirstColumn={dayIndex === 0}
+                              isFirstColumn={false}
                               isToday={false}
                             />
                           </div>
