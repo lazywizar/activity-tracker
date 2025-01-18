@@ -9,90 +9,15 @@ import { debounce } from 'lodash';
 import ActivitySettingsModal from './modals/ActivitySettingsModal';
 import DateRangeModal from './modals/DateRangeModal';
 import MinutesInput from './MinutesInput';
-import { 
-  isPastDay, 
-  calculateExpectedProgress, 
-  getStatusEmoji, 
+import {
+  isPastDay,
+  calculateExpectedProgress,
+  getStatusEmoji,
   getProgressColor,
   generateDateRange,
-  formatDateForCSV 
+  formatDateForCSV
 } from '../utils/activityUtils';
 
-// Add this new function to calculate expected progress
-// const calculateExpectedProgress = (weekDates) => {
-//   const today = new Date();
-//   today.setHours(0, 0, 0, 0);
-
-//   // If we're looking at a past week, expect 100%
-//   if (weekDates[6] < today) {
-//     return 100;
-//   }
-
-//   // If we're looking at a future week, expect 0%
-//   if (weekDates[0] > today) {
-//     return 0;
-//   }
-
-//   // Count days passed including today
-//   let daysPassed = 0;
-//   for (const date of weekDates) {
-//     date.setHours(0, 0, 0, 0);
-//     if (date <= today) {
-//       daysPassed++;
-//     }
-//   }
-
-//   return (daysPassed / 7) * 100;
-// };
-
-// Update the getStatusEmoji function
-// const getStatusEmoji = (progress, expectedProgress) => {
-//   const progressRatio = progress / (expectedProgress || 1);
-
-//   if (progressRatio >= 0.9) {
-//     return <SmileEmoji color="#22c55e" />; // green
-//   } else if (progressRatio >= 0.6) {
-//     return <MehEmoji color="#eab308" />; // yellow
-//   } else {
-//     return <FrownEmoji color="#ef4444" />; // red
-//   }
-// };
-
-// Update the getProgressColor function to use the same logic
-// const getProgressColor = (actualProgress, expectedProgress) => {
-//   const progressRatio = actualProgress / (expectedProgress || 1);
-
-//   if (progressRatio >= 0.9) return 'text-green-600';
-//   if (progressRatio >= 0.6) return 'text-yellow-600';
-//   return 'text-red-600';
-// };
-
-// const isPastDay = (date) => {
-//   const today = new Date();
-//   today.setHours(0, 0, 0, 0);
-//   date.setHours(0, 0, 0, 0);
-//   return date < today;
-// };
-
-// const generateDateRange = (startDate, endDate) => {
-//   const dates = [];
-//   const currentDate = new Date(startDate);
-
-//   while (currentDate <= endDate) {
-//     dates.push(new Date(currentDate));
-//     currentDate.setDate(currentDate.getDate() + 1);
-//   }
-
-//   return dates;
-// };
-
-// const formatDateForCSV = (date) => {
-//   return date.toLocaleDateString('en-US', {
-//     year: 'numeric',
-//     month: '2-digit',
-//     day: '2-digit'
-//   });
-// };
 
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
