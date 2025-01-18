@@ -803,168 +803,178 @@ function ActivityTracker() {
         </div>
       )}
 
-      <div className="activities-grid">
-        <div className="week-headers">
-          <div className="month-navigation">
-              <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
-              <span className="current-month">{getMonthDisplay()}</span>
-              <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
-          </div>
-          {/* <div className="activity-header"></div> */}
-          {weekDates.map((date) => {
-            const { day, date: dateNum } = formatDateHeader(date);
-            return (
-              <div key={date.toISOString()} className="day-header">
-                <div>{day}</div>
-                <div>{dateNum}</div>
-              </div>
-            );
-          })}
-          <div className="status-header"></div>
-          <div className="settings-header"></div>
+      {!loading && activities.length === 0 && !showAddForm && (
+        <div className="text-center py-8 px-4">
+          <div className="text-lg font-medium mb-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">Welcome to Momentum!</div>
+          <div className="text-sm text-gray-500 mb-8">A place to track and manage your weekly activities</div>
+          <div className="text-gray-600">Click the <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text font-bold">+</span> button top right to add your first activity</div>
         </div>
+      )}
 
-        {activities.map((activity, activityIndex) => {
-          const progress = calculateProgress(activity);
-          const expectedProgress = calculateExpectedProgress(weekDates);
-          const progressColorClass = getProgressColor(progress, expectedProgress);
+      {(activities.length > 0 || loading) && (
+        <div className="activities-grid">
+          <div className="week-headers">
+            <div className="month-navigation">
+                <button className="nav-button" onClick={() => changeWeek(-1)}>←</button>
+                <span className="current-month">{getMonthDisplay()}</span>
+                <button className="nav-button" onClick={() => changeWeek(1)}>→</button>
+            </div>
+            {/* <div className="activity-header"></div> */}
+            {weekDates.map((date) => {
+              const { day, date: dateNum } = formatDateHeader(date);
+              return (
+                <div key={date.toISOString()} className="day-header">
+                  <div>{day}</div>
+                  <div>{dateNum}</div>
+                </div>
+              );
+            })}
+            <div className="status-header"></div>
+            <div className="settings-header"></div>
+          </div>
 
-          const getPastWeekDates = (weeksAgo) => {
-            return weekDates.map(date => {
-              const newDate = new Date(date);
-              newDate.setDate(date.getDate() - (7 * weeksAgo));
-              return newDate;
-            });
-          };
+          {activities.map((activity, activityIndex) => {
+            const progress = calculateProgress(activity);
+            const expectedProgress = calculateExpectedProgress(weekDates);
+            const progressColorClass = getProgressColor(progress, expectedProgress);
 
-          return (
-            <div key={activity._id}>
-              <div className="card activity-row">
-                <div className="activity-info">
-                  <div className="activity-name-container">
-                    <div className="activity-name">{activity.name}</div>
-                    {activity.description && (
-                      <div className="activity-tooltip">
-                        {activity.description}
-                      </div>
-                    )}
+            const getPastWeekDates = (weeksAgo) => {
+              return weekDates.map(date => {
+                const newDate = new Date(date);
+                newDate.setDate(date.getDate() - (7 * weeksAgo));
+                return newDate;
+              });
+            };
+
+            return (
+              <div key={activity._id}>
+                <div className="card activity-row">
+                  <div className="activity-info">
+                    <div className="activity-name-container">
+                      <div className="activity-name">{activity.name}</div>
+                      {activity.description && (
+                        <div className="activity-tooltip">
+                          {activity.description}
+                        </div>
+                      )}
+                    </div>
+                    <div className="activity-goal">{activity.weeklyGoalHours} hr goal / wk</div>
                   </div>
-                  <div className="activity-goal">{activity.weeklyGoalHours} hr goal / wk</div>
+
+                  {weekDates.map((date) => {
+                    const monthKey = formatMonthKey(date);
+                    const dayIndex = getDayIndex(date);
+                    const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
+                    const isToday = date.toDateString() === today.toDateString();
+                    const isPast = isPastDay(new Date(date));
+
+                    return (
+                      <div
+                        key={date.toISOString()}
+                        className={`day-cell
+                          ${getProgressColor(minutes, activity.weeklyGoalHours)}
+                          ${isToday ? 'today' : ''}
+                          ${isPast ? 'past' : ''}`}
+                      >
+                        <input
+                          type="number"
+                          value={minutes || ''}
+                          onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
+                          className="minute-input"
+                          placeholder=""
+                          min="0"
+                          max="999"
+                        />
+                      </div>
+                    );
+                  })}
+
+                  <div className="status-cell">
+                    {getStatusEmoji(progress, expectedProgress)}
+                    <span className={`progress-text ${progressColorClass}`}>
+                      {progress.toFixed(1)}%
+                    </span>
+                  </div>
+
+                  <div className="settings-cell flex space-x-2">
+                    <button
+                      className="settings-button"
+                      onClick={() => setExpandedActivities(prev => ({
+                        ...prev,
+                        [activity._id]: !prev[activity._id]
+                      }))}
+                    >
+                      {expandedActivities[activity._id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
+                    <button
+                      className="settings-button"
+                      onClick={() => setEditingActivity(activity)}
+                    >
+                      <MoreVertical size={16} />
+                    </button>
+                  </div>
                 </div>
 
-                {weekDates.map((date) => {
-                  const monthKey = formatMonthKey(date);
-                  const dayIndex = getDayIndex(date);
-                  const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
-                  const isToday = date.toDateString() === today.toDateString();
-                  const isPast = isPastDay(new Date(date));
+                {/* Past weeks rows */}
+                {expandedActivities[activity._id] && [1, 2, 3].map(weeksAgo => {
+                    const pastWeekDates = getPastWeekDates(weeksAgo);
+                    const weekProgress = calculateProgress(activity, pastWeekDates); // Now passing the correct dates
+                    const weekProgressClass = getProgressColor(weekProgress, 100);
 
-                  return (
-                    <div
-                      key={date.toISOString()}
-                      className={`day-cell
-                        ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                        ${isToday ? 'today' : ''}
-                        ${isPast ? 'past' : ''}`}
-                    >
-                      <input
-                        type="number"
-                        value={minutes || ''}
-                        onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                        className="minute-input"
-                        placeholder=""
-                        min="0"
-                        max="999"
-                      />
+                    return (
+                      <div key={weeksAgo} className="card activity-row history-row">
+                      <div className="activity-info">
+                        <div className="activity-goal text-gray-500">
+                          {pastWeekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          -
+                          {pastWeekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </div>
+                      </div>
+
+                      {pastWeekDates.map((date) => {
+                        const monthKey = formatMonthKey(date);
+                        const dayIndex = getDayIndex(date);
+                        const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
+                        const isPast = isPastDay(new Date(date));
+
+                        return (
+                          <div
+                            key={date.toISOString()}
+                            className={`day-cell
+                              ${getProgressColor(minutes, activity.weeklyGoalHours)}
+                              ${isPast ? 'past' : ''}`}
+                          >
+                            <input
+                              type="number"
+                              value={minutes || ''}
+                              onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
+                              className="minute-input"
+                              placeholder=""
+                              min="0"
+                              max="999"
+                            />
+                          </div>
+                        );
+                      })}
+
+                      <div className="status-cell">
+                        {getStatusEmoji(weekProgress, 100)}
+                        <span className={`progress-text ${weekProgressClass}`}>
+                          {weekProgress.toFixed(1)}%
+                        </span>
+                      </div>
+
+                      <div className="settings-cell">
+                        {/* Empty cell to maintain grid alignment */}
+                      </div>
                     </div>
                   );
                 })}
-
-                <div className="status-cell">
-                  {getStatusEmoji(progress, expectedProgress)}
-                  <span className={`progress-text ${progressColorClass}`}>
-                    {progress.toFixed(1)}%
-                  </span>
-                </div>
-
-                <div className="settings-cell flex space-x-2">
-                  <button
-                    className="settings-button"
-                    onClick={() => setExpandedActivities(prev => ({
-                      ...prev,
-                      [activity._id]: !prev[activity._id]
-                    }))}
-                  >
-                    {expandedActivities[activity._id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-                  <button
-                    className="settings-button"
-                    onClick={() => setEditingActivity(activity)}
-                  >
-                    <MoreVertical size={16} />
-                  </button>
-                </div>
               </div>
-
-              {/* Past weeks rows */}
-              {expandedActivities[activity._id] && [1, 2, 3].map(weeksAgo => {
-                  const pastWeekDates = getPastWeekDates(weeksAgo);
-                  const weekProgress = calculateProgress(activity, pastWeekDates); // Now passing the correct dates
-                  const weekProgressClass = getProgressColor(weekProgress, 100);
-
-                  return (
-                    <div key={weeksAgo} className="card activity-row history-row">
-                    <div className="activity-info">
-                      <div className="activity-goal text-gray-500">
-                        {pastWeekDates[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                        -
-                        {pastWeekDates[6].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      </div>
-                    </div>
-
-                    {pastWeekDates.map((date) => {
-                      const monthKey = formatMonthKey(date);
-                      const dayIndex = getDayIndex(date);
-                      const minutes = activity.history[monthKey]?.days[dayIndex] || 0;
-                      const isPast = isPastDay(new Date(date));
-
-                      return (
-                        <div
-                          key={date.toISOString()}
-                          className={`day-cell
-                            ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                            ${isPast ? 'past' : ''}`}
-                        >
-                          <input
-                            type="number"
-                            value={minutes || ''}
-                            onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                            className="minute-input"
-                            placeholder=""
-                            min="0"
-                            max="999"
-                          />
-                        </div>
-                      );
-                    })}
-
-                    <div className="status-cell">
-                      {getStatusEmoji(weekProgress, 100)}
-                      <span className={`progress-text ${weekProgressClass}`}>
-                        {weekProgress.toFixed(1)}%
-                      </span>
-                    </div>
-
-                    <div className="settings-cell">
-                      {/* Empty cell to maintain grid alignment */}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
-      </div>
+            );
+          })}
+        </div>
+      )}
 
       {editingActivity && (
         <ActivitySettingsModal

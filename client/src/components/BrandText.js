@@ -12,30 +12,14 @@ const BrandText = ({ size = 'default', className = '' }) => {
 
   const handleClick = () => {
     navigate('/');
-    // If you want to also force a refresh, you can uncomment the next line
-    // window.location.reload();
   };
 
   return (
     <span
       onClick={handleClick}
-      className={`
-        ${sizes[size]}
-        font-bold
-        bg-gradient-to-r
-        from-purple-600
-        to-purple-500
-        bg-clip-text
-        text-transparent
-        cursor-pointer
-        hover:opacity-80
-        transition-opacity
-        ${className}
-      `}
+      className={`font-medium cursor-pointer bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text ${sizes[size]} ${className}`}
     >
-      M
-      <span className="font-medium">ō</span>
-      mentum
+      Mōmentum
     </span>
   );
 };
