@@ -1,13 +1,9 @@
 steps:
-  # Build the container image
   - name: 'gcr.io/cloud-builders/docker'
+    dir: 'server'
     args: ['build', '-t', 'gcr.io/mymomentumapp/momentum-server', '.']
-
-  # Push the container image to Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/mymomentumapp/momentum-server']
-
-  # Deploy container image to Cloud Run
   - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
