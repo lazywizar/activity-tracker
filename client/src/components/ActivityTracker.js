@@ -8,6 +8,7 @@ import BrandText from './BrandText';
 import { debounce } from 'lodash';
 import ActivitySettingsModal from './modals/ActivitySettingsModal';
 import DateRangeModal from './modals/DateRangeModal';
+import MinutesInput from './MinutesInput';
 import { 
   isPastDay, 
   calculateExpectedProgress, 
@@ -662,14 +663,11 @@ function ActivityTracker() {
                           ${isToday ? 'today' : ''}
                           ${isPast ? 'past' : ''}`}
                       >
-                        <input
-                          type="number"
+                        <MinutesInput
                           value={minutes || ''}
                           onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                          className="minute-input"
-                          placeholder=""
-                          min="0"
-                          max="999"
+                          isFirstColumn={dayIndex === 0}
+                          isToday={isToday}
                         />
                       </div>
                     );
@@ -730,14 +728,11 @@ function ActivityTracker() {
                               ${getProgressColor(minutes, activity.weeklyGoalHours)}
                               ${isPast ? 'past' : ''}`}
                           >
-                            <input
-                              type="number"
+                            <MinutesInput
                               value={minutes || ''}
                               onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                              className="minute-input"
-                              placeholder=""
-                              min="0"
-                              max="999"
+                              isFirstColumn={dayIndex === 0}
+                              isToday={false}
                             />
                           </div>
                         );
