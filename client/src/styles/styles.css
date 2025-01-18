@@ -206,23 +206,26 @@ body {
   @apply flex items-center gap-2;
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   min-width: 90px;
+  height: 1.5rem;
 }
 
 .status-cell .emoji {
-  font-size: 1.5rem;
   line-height: 1;
   filter: saturate(1.2) brightness(1.1);
-  transform: scale(1);
-  transition: transform 0.2s ease;
+  transition: all 0.3s ease-out;
+  transform-origin: center center;
+  max-height: 1.25rem;
+  vertical-align: middle;
 }
 
 .status-cell:hover .emoji {
-  transform: scale(1.2);
+  filter: saturate(1.4) brightness(1.2);
 }
 
 .progress-text {
   @apply text-xs font-normal text-gray-600 tabular-nums;
-  min-width: 42px;
+  font-size: 0.75rem;
+  line-height: 1;
   letter-spacing: -0.02em;
   font-feature-settings: "tnum";
   font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;

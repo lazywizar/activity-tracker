@@ -560,7 +560,7 @@ function ActivityTracker() {
             };
 
             return (
-              <div key={activity._id} className="mb-4">
+              <div key={activity._id} className="mb-2">
                 <div className="card activity-row">
                   <div className="activity-info">
                     <Link
@@ -603,7 +603,15 @@ function ActivityTracker() {
                   })}
 
                   <div className="status-cell">
-                    <span className="emoji">{getStatusEmoji(progress, expectedProgress)}</span>
+                    <span
+                      className="emoji"
+                      style={{
+                        fontSize: `${Math.min(1.25, Math.max(1 + (progress * 0.004), 1))}rem`,
+                        transform: `scale(${Math.min(1.1, Math.max(0.9 + (progress * 0.003), 0.9))})`
+                      }}
+                    >
+                      {getStatusEmoji(progress, expectedProgress)}
+                    </span>
                     <span className={`progress-text text-progress-${progressColorClass}`}>
                       {progress.toFixed(0)}%
                     </span>

@@ -40,7 +40,7 @@ export const getStatusEmoji = (progress, goal) => {
     return '🌳'; // Full tree with fruits
   } else if (progress >= goal * 0.5) {
     return '🌿'; // Leafy plant with multiple leaves
-  } else if (progress >= goal * 0.2) {
+  } else if (progress >= goal * 0.01) {
     return '🌱'; // Sprouting seed
   } else {
     return '🌰'; // Seed
@@ -86,11 +86,11 @@ export const getDayIndex = (date) => {
 export const getPastWeekDates = (weeksAgo) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  
+
   // Calculate the start of the week weeksAgo weeks ago
   const startDate = new Date(today);
   startDate.setDate(today.getDate() - (today.getDay() + 7 * weeksAgo));
-  
+
   // Generate dates for that week
   const dates = [];
   for (let i = 0; i < 7; i++) {
@@ -98,7 +98,7 @@ export const getPastWeekDates = (weeksAgo) => {
     date.setDate(startDate.getDate() + i);
     dates.push(date);
   }
-  
+
   return dates;
 };
 

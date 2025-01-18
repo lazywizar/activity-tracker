@@ -270,7 +270,15 @@ function ActivityDetail() {
               })}
 
               <div className="status-cell">
-                <span className="emoji">{getStatusEmoji(weekProgress, 100)}</span>
+                <span 
+                  className="emoji"
+                  style={{ 
+                    fontSize: `${Math.min(1.25, Math.max(1 + (weekProgress * 0.004), 1))}rem`,
+                    transform: `scale(${Math.min(1.1, Math.max(0.9 + (weekProgress * 0.003), 0.9))})`
+                  }}
+                >
+                  {getStatusEmoji(weekProgress, 100)}
+                </span>
                 <span className={`progress-text text-progress-${weekProgressClass}`}>
                   {weekProgress.toFixed(0)}%
                 </span>
