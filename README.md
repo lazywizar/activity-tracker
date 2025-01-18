@@ -69,4 +69,29 @@ Now you are ready to test and develop the application locally!
 
 
 ## Status Page
-https://stats.uptimerobot.com/wrQ5akfDYW  
+https://stats.uptimerobot.com/wrQ5akfDYW
+
+## GCP Deployment
+### Client
+cd client
+gcloud builds submit --tag gcr.io/$PROJECT_ID/momentum-client
+cd ..
+
+### Server
+cd server
+gcloud builds submit --tag gcr.io/$PROJECT_ID/momentum-server
+cd ..
+
+gcloud run deploy momentum-client \
+  --image gcr.io/$PROJECT_ID/momentum-client \
+  --platform managed \
+  --region $REGION \
+  --allow-unauthenticated \
+  --min-instances 1
+
+gcloud run deploy momentum-server \
+  --image gcr.io/$PROJECT_ID/momentum-server \
+  --platform managed \
+  --region $REGION \
+  --allow-unauthenticated \
+  --min-instances 1
