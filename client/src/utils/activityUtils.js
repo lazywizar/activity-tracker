@@ -32,13 +32,14 @@ export const calculateExpectedProgress = (weekDates) => {
 
 export const getStatusEmoji = (progress, expectedProgress) => {
   const progressRatio = progress / (expectedProgress || 1);
+  const actualProgress = progressRatio * 100;
 
   if (progressRatio >= 0.9) {
-    return <SmileEmoji color="#22c55e" />; // green
+    return <SmileEmoji progress={actualProgress} />;
   } else if (progressRatio >= 0.6) {
-    return <MehEmoji color="#eab308" />; // yellow
+    return <MehEmoji progress={actualProgress} />;
   } else {
-    return <FrownEmoji color="#ef4444" />; // red
+    return <FrownEmoji progress={actualProgress} />;
   }
 };
 
