@@ -1,311 +1,97 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Settings, ChevronUp, ChevronDown, Download, X , LogOut, MoreVertical} from 'lucide-react';
+import { Settings, ChevronUp, ChevronDown, Download, X, LogOut, MoreVertical } from 'lucide-react';
 import axios from 'axios';
 import { useAuth } from './Auth/AuthContext';
 import '../styles/auth.css';
 import '../styles/styles.css';
 import BrandText from './BrandText';
 import { debounce } from 'lodash';
-
-// Updated Emoji components with color
-const SmileEmoji = ({ color }) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2"/>
-    <path d="M6.5 12.5C6.5 12.5 7.5 14 10 14C12.5 14 13.5 12.5 13.5 12.5" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="7" cy="8" r="1" fill={color}/>
-    <circle cx="13" cy="8" r="1" fill={color}/>
-  </svg>
-);
-
-const MehEmoji = ({ color }) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2"/>
-    <line x1="7" y1="12" x2="13" y2="12" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="7" cy="8" r="1" fill={color}/>
-    <circle cx="13" cy="8" r="1" fill={color}/>
-  </svg>
-);
-
-const FrownEmoji = ({ color }) => (
-  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="10" cy="10" r="8" stroke={color} strokeWidth="2"/>
-    <path d="M6.5 13.5C6.5 13.5 7.5 12 10 12C12.5 12 13.5 13.5 13.5 13.5" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-    <circle cx="7" cy="8" r="1" fill={color}/>
-    <circle cx="13" cy="8" r="1" fill={color}/>
-  </svg>
-);
-
-const isPastDay = (date) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  date.setHours(0, 0, 0, 0);
-  return date < today;
-};
+import ActivitySettingsModal from './modals/ActivitySettingsModal';
+import DateRangeModal from './modals/DateRangeModal';
+import { 
+  isPastDay, 
+  calculateExpectedProgress, 
+  getStatusEmoji, 
+  getProgressColor,
+  generateDateRange,
+  formatDateForCSV 
+} from '../utils/activityUtils';
 
 // Add this new function to calculate expected progress
-const calculateExpectedProgress = (weekDates) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+// const calculateExpectedProgress = (weekDates) => {
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
 
-  // If we're looking at a past week, expect 100%
-  if (weekDates[6] < today) {
-    return 100;
-  }
+//   // If we're looking at a past week, expect 100%
+//   if (weekDates[6] < today) {
+//     return 100;
+//   }
 
-  // If we're looking at a future week, expect 0%
-  if (weekDates[0] > today) {
-    return 0;
-  }
+//   // If we're looking at a future week, expect 0%
+//   if (weekDates[0] > today) {
+//     return 0;
+//   }
 
-  // Count days passed including today
-  let daysPassed = 0;
-  for (const date of weekDates) {
-    date.setHours(0, 0, 0, 0);
-    if (date <= today) {
-      daysPassed++;
-    }
-  }
+//   // Count days passed including today
+//   let daysPassed = 0;
+//   for (const date of weekDates) {
+//     date.setHours(0, 0, 0, 0);
+//     if (date <= today) {
+//       daysPassed++;
+//     }
+//   }
 
-  return (daysPassed / 7) * 100;
-};
+//   return (daysPassed / 7) * 100;
+// };
 
 // Update the getStatusEmoji function
-const getStatusEmoji = (progress, expectedProgress) => {
-  const progressRatio = progress / (expectedProgress || 1);
+// const getStatusEmoji = (progress, expectedProgress) => {
+//   const progressRatio = progress / (expectedProgress || 1);
 
-  if (progressRatio >= 0.9) {
-    return <SmileEmoji color="#22c55e" />; // green
-  } else if (progressRatio >= 0.6) {
-    return <MehEmoji color="#eab308" />; // yellow
-  } else {
-    return <FrownEmoji color="#ef4444" />; // red
-  }
-};
+//   if (progressRatio >= 0.9) {
+//     return <SmileEmoji color="#22c55e" />; // green
+//   } else if (progressRatio >= 0.6) {
+//     return <MehEmoji color="#eab308" />; // yellow
+//   } else {
+//     return <FrownEmoji color="#ef4444" />; // red
+//   }
+// };
 
 // Update the getProgressColor function to use the same logic
-const getProgressColor = (actualProgress, expectedProgress) => {
-  const progressRatio = actualProgress / (expectedProgress || 1);
+// const getProgressColor = (actualProgress, expectedProgress) => {
+//   const progressRatio = actualProgress / (expectedProgress || 1);
 
-  if (progressRatio >= 0.9) return 'text-green-600';
-  if (progressRatio >= 0.6) return 'text-yellow-600';
-  return 'text-red-600';
-};
+//   if (progressRatio >= 0.9) return 'text-green-600';
+//   if (progressRatio >= 0.6) return 'text-yellow-600';
+//   return 'text-red-600';
+// };
 
-// Activity Settings Modal Component
-const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
-  const [name, setName] = useState(activity.name);
-  const [description, setDescription] = useState(activity.description || '');
-  const [weeklyGoalHours, setWeeklyGoalHours] = useState(activity.weeklyGoalHours);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
+// const isPastDay = (date) => {
+//   const today = new Date();
+//   today.setHours(0, 0, 0, 0);
+//   date.setHours(0, 0, 0, 0);
+//   return date < today;
+// };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+// const generateDateRange = (startDate, endDate) => {
+//   const dates = [];
+//   const currentDate = new Date(startDate);
 
-    if (!name.trim()) {
-      setError('Activity name cannot be empty');
-      return;
-    }
+//   while (currentDate <= endDate) {
+//     dates.push(new Date(currentDate));
+//     currentDate.setDate(currentDate.getDate() + 1);
+//   }
 
-    if (isNaN(weeklyGoalHours) || weeklyGoalHours <= 0) {
-      setError('Please enter a valid goal (greater than 0)');
-      return;
-    }
+//   return dates;
+// };
 
-    setIsSubmitting(true);
-    try {
-      await onSave({ ...activity, name, description, weeklyGoalHours: Number(weeklyGoalHours) });
-      setError(null);
-    } catch (err) {
-      setError('Failed to save changes. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content card">
-        <h2 className="modal-title">Edit Activity</h2>
-        {error && (
-          <div className="error-message mb-4 text-red-600 text-sm">{error}</div>
-        )}
-        <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group">
-            <label htmlFor="name">Activity Name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
-            <textarea
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="input min-h-[80px] resize-y"
-              placeholder="Add a description for this activity..."
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="goal">Weekly Goal (hours)</label>
-            <input
-              id="goal"
-              type="number"
-              min="0.5"
-              step="0.5"
-              value={weeklyGoalHours}
-              onChange={(e) => setWeeklyGoalHours(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
-          <div className="modal-actions">
-            <button
-              type="button"
-              onClick={onDelete}
-              className="delete-button"
-              disabled={isSubmitting}
-            >
-              Delete Activity
-            </button>
-            <div className="modal-buttons">
-              <button
-                type="button"
-                onClick={onClose}
-                className="cancel-button"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="save-button"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </button>
-            </div>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Add these new components after your existing modals
-const DateRangeModal = ({ onClose, onDownload }) => {
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [error, setError] = useState('');
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!startDate || !endDate) {
-      setError('Please select both start and end dates');
-      return;
-    }
-
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const twoYearsMs = 2 * 365 * 24 * 60 * 60 * 1000;
-
-    if (end < start) {
-      setError('End date must be after start date');
-      return;
-    }
-
-    if (end - start > twoYearsMs) {
-      setError('Date range cannot exceed 2 years');
-      return;
-    }
-
-    onDownload(start, end);
-  };
-
-  return (
-    <div className="modal-overlay">
-      <div className="modal-content card w-96">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="modal-title">Export Data Range</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
-          >
-            <X size={20} />
-          </button>
-        </div>
-        {error && (
-          <div className="error-message mb-4 text-red-600 text-sm">{error}</div>
-        )}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="form-group">
-            <label htmlFor="startDate">Start Date</label>
-            <input
-              id="startDate"
-              type="date"
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
-          <div className="form-group">
-            <label htmlFor="endDate">End Date</label>
-            <input
-              id="endDate"
-              type="date"
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
-          <div className="flex justify-end space-x-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="cancel-button"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="save-button"
-            >
-              Download
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-const generateDateRange = (startDate, endDate) => {
-  const dates = [];
-  const currentDate = new Date(startDate);
-
-  while (currentDate <= endDate) {
-    dates.push(new Date(currentDate));
-    currentDate.setDate(currentDate.getDate() + 1);
-  }
-
-  return dates;
-};
-
-const formatDateForCSV = (date) => {
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit'
-  });
-};
+// const formatDateForCSV = (date) => {
+//   return date.toLocaleDateString('en-US', {
+//     year: 'numeric',
+//     month: '2-digit',
+//     day: '2-digit'
+//   });
+// };
 
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
