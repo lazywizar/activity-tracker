@@ -74,24 +74,24 @@ https://stats.uptimerobot.com/wrQ5akfDYW
 ## GCP Deployment
 ### Client
 cd client
-gcloud builds submit --tag gcr.io/$PROJECT_ID/momentum-client
+gcloud builds submit --tag gcr.io/mymomentumapp/momentum-client
 cd ..
 
 ### Server
 cd server
-gcloud builds submit --tag gcr.io/$PROJECT_ID/momentum-server
+gcloud builds submit --tag gcr.io/mymomentumapp/momentum-server
 cd ..
 
 gcloud run deploy momentum-client \
-  --image gcr.io/$PROJECT_ID/momentum-client \
+  --image gcr.io/mymomentumapp/momentum-client \
   --platform managed \
-  --region $REGION \
+  --region us-central1 \
   --allow-unauthenticated \
   --min-instances 1
 
 gcloud run deploy momentum-server \
-  --image gcr.io/$PROJECT_ID/momentum-server \
+  --image gcr.io/mymomentumapp/momentum-server \
   --platform managed \
-  --region $REGION \
+  --region us-central1 \
   --allow-unauthenticated \
   --min-instances 1
