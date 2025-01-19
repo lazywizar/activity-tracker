@@ -657,7 +657,7 @@ function ActivityTracker() {
                     return (
                       <div
                         key={date.toISOString()}
-                        className={`day-cell
+                        className={`day-cell relative
                           ${getProgressColor(minutes, activity.weeklyGoalHours)}
                           ${isToday ? 'today' : ''}
                           ${isPast ? 'past' : ''}`}
@@ -671,6 +671,11 @@ function ActivityTracker() {
                           min="0"
                           max="999"
                         />
+                        {isToday && (
+                          <span className="absolute right-[2px] bottom-[1px] text-[8px] opacity-50 text-gray-500 pointer-events-none select-none">
+                            min
+                          </span>
+                        )}
                       </div>
                     );
                   })}
