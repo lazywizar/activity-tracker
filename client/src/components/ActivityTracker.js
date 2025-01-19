@@ -672,7 +672,7 @@ function ActivityTracker() {
                           max="999"
                         />
                         {isToday && (
-                          <span className="absolute right-[2px] bottom-[1px] text-[8px] opacity-50 text-gray-500 pointer-events-none select-none">
+                          <span className="absolute right-[2px] bottom-[1px] text-[0.5rem] opacity-50 text-gray-500 pointer-events-none select-none">
                             min
                           </span>
                         )}
