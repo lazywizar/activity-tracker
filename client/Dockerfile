@@ -4,6 +4,26 @@ FROM node:18 AS build
 # Set the working directory
 WORKDIR /app
 
+# Declare build arguments
+ARG REACT_APP_API_URL
+ARG REACT_APP_FIREBASE_API_KEY
+ARG REACT_APP_FIREBASE_AUTH_DOMAIN
+ARG REACT_APP_FIREBASE_PROJECT_ID
+ARG REACT_APP_FIREBASE_STORAGE_BUCKET
+ARG REACT_APP_FIREBASE_MESSAGING_SENDER_ID
+ARG REACT_APP_FIREBASE_APP_ID
+ARG REACT_APP_FIREBASE_MEASUREMENT_ID
+
+# Set environment variables from build args
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+ENV REACT_APP_FIREBASE_API_KEY=$REACT_APP_FIREBASE_API_KEY
+ENV REACT_APP_FIREBASE_AUTH_DOMAIN=$REACT_APP_FIREBASE_AUTH_DOMAIN
+ENV REACT_APP_FIREBASE_PROJECT_ID=$REACT_APP_FIREBASE_PROJECT_ID
+ENV REACT_APP_FIREBASE_STORAGE_BUCKET=$REACT_APP_FIREBASE_STORAGE_BUCKET
+ENV REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$REACT_APP_FIREBASE_MESSAGING_SENDER_ID
+ENV REACT_APP_FIREBASE_APP_ID=$REACT_APP_FIREBASE_APP_ID
+ENV REACT_APP_FIREBASE_MEASUREMENT_ID=$REACT_APP_FIREBASE_MEASUREMENT_ID
+
 # Copy package.json and package-lock.json
 COPY package*.json ./
 
@@ -13,14 +33,19 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Set environment variable for production build
-ENV REACT_APP_API_URL=https://momentum-server-302823411886.us-central1.run.app/api
+# Debug: Print environment variables
+RUN echo "Environment variables during build:"
+RUN printenv | grep REACT_APP
 
 # Build the static files
 RUN npm run build
 
 # Use an official Nginx image to serve the static files
 FROM nginx:alpine
+
+# Debug: Print environment variables in final image
+RUN echo "Environment variables in nginx:"
+RUN printenv | grep REACT_APP
 
 # Copy the build output to the Nginx html directory
 COPY --from=build /app/build /usr/share/nginx/html

@@ -1,7 +1,29 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'client'
-    args: ['build', '-t', 'gcr.io/mymomentumapp/momentum-client', '.']
+    args: [
+      'build',
+      '-t', 'gcr.io/mymomentumapp/momentum-client',
+      '--build-arg', 'REACT_APP_API_URL=$REACT_APP_API_URL',
+      '--build-arg', 'REACT_APP_FIREBASE_API_KEY=$REACT_APP_FIREBASE_API_KEY',
+      '--build-arg', 'REACT_APP_FIREBASE_AUTH_DOMAIN=$REACT_APP_FIREBASE_AUTH_DOMAIN',
+      '--build-arg', 'REACT_APP_FIREBASE_PROJECT_ID=$REACT_APP_FIREBASE_PROJECT_ID',
+      '--build-arg', 'REACT_APP_FIREBASE_STORAGE_BUCKET=$REACT_APP_FIREBASE_STORAGE_BUCKET',
+      '--build-arg', 'REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$REACT_APP_FIREBASE_MESSAGING_SENDER_ID',
+      '--build-arg', 'REACT_APP_FIREBASE_APP_ID=$REACT_APP_FIREBASE_APP_ID',
+      '--build-arg', 'REACT_APP_FIREBASE_MEASUREMENT_ID=$REACT_APP_FIREBASE_MEASUREMENT_ID',
+      '.'
+    ]
+    secretEnv: [
+      'REACT_APP_API_URL',
+      'REACT_APP_FIREBASE_API_KEY',
+      'REACT_APP_FIREBASE_AUTH_DOMAIN',
+      'REACT_APP_FIREBASE_PROJECT_ID',
+      'REACT_APP_FIREBASE_STORAGE_BUCKET',
+      'REACT_APP_FIREBASE_MESSAGING_SENDER_ID',
+      'REACT_APP_FIREBASE_APP_ID',
+      'REACT_APP_FIREBASE_MEASUREMENT_ID'
+    ]
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/mymomentumapp/momentum-client']
   - name: 'gcr.io/cloud-builders/gcloud'
@@ -26,3 +48,22 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+
+availableSecrets:
+  secretManager:
+    - versionName: projects/mymomentumapp/secrets/react-app-api-url/versions/latest
+      env: 'REACT_APP_API_URL'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-api-key/versions/latest
+      env: 'REACT_APP_FIREBASE_API_KEY'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-auth-domain/versions/latest
+      env: 'REACT_APP_FIREBASE_AUTH_DOMAIN'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-project-id/versions/latest
+      env: 'REACT_APP_FIREBASE_PROJECT_ID'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-storage-bucket/versions/latest
+      env: 'REACT_APP_FIREBASE_STORAGE_BUCKET'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-messaging-sender-id/versions/latest
+      env: 'REACT_APP_FIREBASE_MESSAGING_SENDER_ID'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-app-id/versions/latest
+      env: 'REACT_APP_FIREBASE_APP_ID'
+    - versionName: projects/mymomentumapp/secrets/react-app-firebase-measurement-id/versions/latest
+      env: 'REACT_APP_FIREBASE_MEASUREMENT_ID'
