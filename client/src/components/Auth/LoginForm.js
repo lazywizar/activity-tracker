@@ -9,12 +9,14 @@ export const LoginForm = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, forgotPassword } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setSuccessMessage('');
     setIsLoading(true);
 
     try {
@@ -36,11 +38,17 @@ export const LoginForm = () => {
 
     try {
       setIsLoading(true);
+      setError('');
+      setSuccessMessage('');
       await forgotPassword(email);
-      setError(''); // Clear any existing errors
-      alert('Password reset email sent. Please check your inbox.');
+      setSuccessMessage('Password reset email sent. Please check your inbox.');
     } catch (error) {
-      setError(getFirebaseErrorMessage(error.code));
+      console.log('Password reset error:', error.code, error.message); // Debug log
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-email') {
+        setError('No account exists with this email. Please sign up first.');
+      } else {
+        setError('Failed to send reset email. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -54,10 +62,10 @@ export const LoginForm = () => {
       case 'auth/user-disabled':
         return 'Account disabled. Please contact support.';
       case 'auth/user-not-found':
-      case 'auth/invalid-credential':
-        return 'User not registered or invalid credentials.... would you like to sign up?';
+        return 'User not registered... would you like to sign up?';
       case 'auth/wrong-password':
-        return 'Incorrect password. Try again or reset password.';
+      case 'auth/invalid-credential':
+        return 'Forgot your password? Click reset password below.';
       case 'auth/too-many-requests':
         return 'Too many attempts. Please try again later.';
       case 'auth/network-request-failed':
@@ -78,6 +86,12 @@ export const LoginForm = () => {
         {error && (
           <div className="bg-red-50 text-red-600 p-4 rounded-lg text-sm">
             {error}
+          </div>
+        )}
+        
+        {successMessage && (
+          <div className="bg-green-50 text-green-600 p-4 rounded-lg text-sm">
+            {successMessage}
           </div>
         )}
 
