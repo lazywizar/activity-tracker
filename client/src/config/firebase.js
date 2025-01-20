@@ -8,6 +8,12 @@ const redactString = (str) => {
   return str.substring(0, 4) + '...' + str.substring(str.length - 4);
 };
 
+// Debug: Log all environment variables
+console.log('Environment Variables Check:', {
+  NODE_ENV: process.env.NODE_ENV,
+  all_env_keys: Object.keys(process.env).filter(key => key.startsWith('REACT_APP_')),
+});
+
 const firebaseConfig = {
   apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
   authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
@@ -19,6 +25,14 @@ const firebaseConfig = {
 };
 
 // Debug log for Firebase configuration
+console.log('Firebase Config Loading State:', {
+  config_keys: Object.keys(firebaseConfig),
+  has_api_key: !!firebaseConfig.apiKey,
+  has_project_id: !!firebaseConfig.projectId,
+  api_key_type: typeof firebaseConfig.apiKey,
+  project_id_type: typeof firebaseConfig.projectId
+});
+
 console.log('Firebase Config (Redacted):', {
   apiKey: redactString(firebaseConfig.apiKey),
   authDomain: redactString(firebaseConfig.authDomain),
