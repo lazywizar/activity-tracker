@@ -95,3 +95,21 @@ gcloud run deploy momentum-server \
   --region us-central1 \
   --allow-unauthenticated \
   --min-instances 1
+
+## Adding Secrets to GCP
+
+echo -n "mongodb+srv://thinklazy:xxxxxxx@momentum.znuc9.mongodb.net/?retryWrites=true&w=majority&appName=momentum" | \
+  gcloud secrets versions add mongodb-uri --data-file=-
+
+echo -n "xxxxxx" | \
+  gcloud secrets versions add jwt-secret --data-file=-
+
+gcloud secrets add-iam-policy-binding jwt-secret \
+  --member=serviceAccount:302823411886-compute@developer.gserviceaccount.com \
+  --role=roles/secretmanager.secretAccessor
+
+### 4. View Secret Values (for verification)
+```bash
+# View the latest version of a secret
+gcloud secrets versions access latest --secret="REACT_APP_API_URL"
+```
