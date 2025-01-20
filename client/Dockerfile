@@ -33,11 +33,11 @@ ENV REACT_APP_FIREBASE_MESSAGING_SENDER_ID=${REACT_APP_FIREBASE_MESSAGING_SENDER
 ENV REACT_APP_FIREBASE_APP_ID=${REACT_APP_FIREBASE_APP_ID}
 ENV REACT_APP_FIREBASE_MEASUREMENT_ID=${REACT_APP_FIREBASE_MEASUREMENT_ID}
 
-# Debug: Print environment variables (redacted)
+# Debug: Print environment variables (redacted for security)
 RUN echo "Building with env:" && \
-    echo "API_URL: ${REACT_APP_API_URL}" && \
-    echo "FIREBASE_API_KEY: ${REACT_APP_FIREBASE_API_KEY:0:4}..." && \
-    echo "FIREBASE_PROJECT_ID: ${REACT_APP_FIREBASE_PROJECT_ID}"
+    echo "API_URL: $REACT_APP_API_URL" && \
+    echo "FIREBASE_API_KEY: [redacted]" && \
+    echo "FIREBASE_PROJECT_ID: $REACT_APP_FIREBASE_PROJECT_ID"
 
 # Build the static files
 RUN npm run build
