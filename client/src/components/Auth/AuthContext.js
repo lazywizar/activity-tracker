@@ -21,12 +21,7 @@ export const AuthProvider = ({ children }) => {
       if (token && storedUser) {
         // First check if token is expired
         if (isTokenExpired(token)) {
-          // Clear everything if token is expired
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          sessionStorage.removeItem('token');
-          sessionStorage.removeItem('user');
-          delete axios.defaults.headers.common['Authorization'];
+          logout();
           setLoading(false);
           return;
         }
@@ -36,17 +31,12 @@ export const AuthProvider = ({ children }) => {
           axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
           // Make a request to verify the token
-          await axios.get(`${process.env.REACT_APP_API_URL}/auth/verify`);
-
-          setUser(JSON.parse(storedUser));
+          const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/auth/verify`);
+          setUser(data.user);
           setIsAuthenticated(true);
         } catch (error) {
-          // If token is invalid, clear everything
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          sessionStorage.removeItem('token');
-          sessionStorage.removeItem('user');
-          delete axios.defaults.headers.common['Authorization'];
+          console.error('Token verification failed:', error);
+          logout();
         }
       }
       setLoading(false);

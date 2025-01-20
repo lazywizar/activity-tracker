@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const { log } = require('../utils/logger');
+const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -98,9 +99,9 @@ router.post('/forgot-password', async (req, res) => {
 
     // In a real app, send email with reset link
     // For demo, just return the token
-    res.json({ 
+    res.json({
       message: 'Password reset initiated',
-      resetToken 
+      resetToken
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -132,6 +133,19 @@ router.post('/reset-password', async (req, res) => {
     await user.save();
 
     res.json({ message: 'Password reset successful' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add token verification endpoint
+router.get('/verify', authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    res.json({ user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
