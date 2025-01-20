@@ -17,82 +17,6 @@ import {
   formatDateForCSV 
 } from '../utils/activityUtils';
 
-// Add this new function to calculate expected progress
-// const calculateExpectedProgress = (weekDates) => {
-//   const today = new Date();
-//   today.setHours(0, 0, 0, 0);
-
-//   // If we're looking at a past week, expect 100%
-//   if (weekDates[6] < today) {
-//     return 100;
-//   }
-
-//   // If we're looking at a future week, expect 0%
-//   if (weekDates[0] > today) {
-//     return 0;
-//   }
-
-//   // Count days passed including today
-//   let daysPassed = 0;
-//   for (const date of weekDates) {
-//     date.setHours(0, 0, 0, 0);
-//     if (date <= today) {
-//       daysPassed++;
-//     }
-//   }
-
-//   return (daysPassed / 7) * 100;
-// };
-
-// Update the getStatusEmoji function
-// const getStatusEmoji = (progress, expectedProgress) => {
-//   const progressRatio = progress / (expectedProgress || 1);
-
-//   if (progressRatio >= 0.9) {
-//     return <SmileEmoji color="#22c55e" />; // green
-//   } else if (progressRatio >= 0.6) {
-//     return <MehEmoji color="#eab308" />; // yellow
-//   } else {
-//     return <FrownEmoji color="#ef4444" />; // red
-//   }
-// };
-
-// Update the getProgressColor function to use the same logic
-// const getProgressColor = (actualProgress, expectedProgress) => {
-//   const progressRatio = actualProgress / (expectedProgress || 1);
-
-//   if (progressRatio >= 0.9) return 'text-green-600';
-//   if (progressRatio >= 0.6) return 'text-yellow-600';
-//   return 'text-red-600';
-// };
-
-// const isPastDay = (date) => {
-//   const today = new Date();
-//   today.setHours(0, 0, 0, 0);
-//   date.setHours(0, 0, 0, 0);
-//   return date < today;
-// };
-
-// const generateDateRange = (startDate, endDate) => {
-//   const dates = [];
-//   const currentDate = new Date(startDate);
-
-//   while (currentDate <= endDate) {
-//     dates.push(new Date(currentDate));
-//     currentDate.setDate(currentDate.getDate() + 1);
-//   }
-
-//   return dates;
-// };
-
-// const formatDateForCSV = (date) => {
-//   return date.toLocaleDateString('en-US', {
-//     year: 'numeric',
-//     month: '2-digit',
-//     day: '2-digit'
-//   });
-// };
-
 function ActivityTracker() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [activities, setActivities] = useState([]);
@@ -116,13 +40,18 @@ function ActivityTracker() {
   const updateActivity = async (activityId, updatedHistory, source = 'direct') => {
     console.log(`🔄 [${source}] Attempting to save activity ${activityId}`, {
       pendingUpdates: Array.from(pendingUpdates),
-      history: updatedHistory,
+      history: JSON.stringify(updatedHistory),
       attempts: saveAttemptsRef.current[activityId] || 0
     });
 
     try {
       // Increment save attempts
       saveAttemptsRef.current[activityId] = (saveAttemptsRef.current[activityId] || 0) + 1;
+
+      console.log('📤 Sending PUT request:', {
+        url: `${API_BASE_URL}/activities/${activityId}`,
+        body: { history: updatedHistory }
+      });
 
       const response = await axios.put(
         `${API_BASE_URL}/activities/${activityId}`,
@@ -132,13 +61,13 @@ function ActivityTracker() {
       );
 
       console.log(`✅ [${source}] Successfully saved activity ${activityId}`, {
-        responseData: response.data,
+        responseData: JSON.stringify(response.data),
         attempts: saveAttemptsRef.current[activityId]
       });
 
       // Update local state with the response
       const newActivities = activities.map(a =>
-        a._id === activityId ? response.data : a
+        a.id === activityId ? response.data : a
       );
       setActivities(newActivities);
 
@@ -153,7 +82,8 @@ function ActivityTracker() {
 
     } catch (error) {
       console.error(`❌ [${source}] Failed to save activity ${activityId}`, {
-        error,
+        error: error.message,
+        stack: error.stack,
         attempts: saveAttemptsRef.current[activityId]
       });
       setError('Failed to save changes. Please try again.');
@@ -379,11 +309,11 @@ function ActivityTracker() {
   const handleEditActivity = async (updatedActivity) => {
     try {
       const response = await axios.put(
-        `${API_BASE_URL}/activities/${editingActivity._id}`,
+        `${API_BASE_URL}/activities/${editingActivity.id}`,
         updatedActivity
       );
       const newActivities = activities.map(a =>
-        a._id === editingActivity._id ? response.data : a
+        a.id === editingActivity.id ? response.data : a
       );
       setActivities(newActivities);
       setEditingActivity(null);
@@ -394,8 +324,8 @@ function ActivityTracker() {
 
   const handleDeleteActivity = async () => {
     try {
-      await axios.delete(`${API_BASE_URL}/activities/${editingActivity._id}`);
-      const newActivities = activities.filter(a => a._id !== editingActivity._id);
+      await axios.delete(`${API_BASE_URL}/activities/${editingActivity.id}`);
+      const newActivities = activities.filter(a => a.id !== editingActivity.id);
       setActivities(newActivities);
       setEditingActivity(null);
     } catch (error) {
@@ -410,11 +340,12 @@ function ActivityTracker() {
       const dayIndex = getDayIndex(date);
 
       console.log('📝 Handling minutes change', {
-        activityId: activity._id,
+        activityId: activity.id,
         monthKey,
         dayIndex,
         minutes,
-        previousValue: activity.history[monthKey]?.days[dayIndex]
+        previousValue: activity.history[monthKey]?.days[dayIndex],
+        activity: JSON.stringify(activity)
       });
 
       // Handle empty string or null specifically
@@ -440,17 +371,18 @@ function ActivityTracker() {
       setActivities(updatedActivities);
 
       // Track pending update
-      setPendingUpdates(prev => new Set(prev).add(activity._id));
-      pendingChangesRef.current[activity._id] = updatedActivity.history;
+      setPendingUpdates(prev => new Set(prev).add(activity.id));
+      pendingChangesRef.current[activity.id] = updatedActivity.history;
 
       console.log('🔄 Queuing update', {
-        activityId: activity._id,
+        activityId: activity.id,
         pendingUpdates: Array.from(pendingUpdates),
-        newValue: parsedMinutes
+        newValue: parsedMinutes,
+        history: JSON.stringify(updatedActivity.history)
       });
 
       // Trigger debounced update
-      debouncedUpdate(activity._id, updatedActivity.history);
+      debouncedUpdate(activity.id, updatedActivity.history);
 
     } catch (error) {
       console.error('❌ Error in handleMinutesChange:', error);
@@ -622,7 +554,7 @@ function ActivityTracker() {
           {activities.map((activity, activityIndex) => {
             const progress = calculateProgress(activity);
             const expectedProgress = calculateExpectedProgress(weekDates);
-            const progressColorClass = getProgressColor(progress, expectedProgress);
+            const progressColorClass = getProgressColor(progress, 100);
 
             const getPastWeekDates = (weeksAgo) => {
               return weekDates.map(date => {
@@ -633,7 +565,7 @@ function ActivityTracker() {
             };
 
             return (
-              <div key={activity._id}>
+              <div key={activity.id}>
                 <div className="card activity-row">
                   <div className="activity-info">
                     <div className="activity-name-container">
@@ -681,7 +613,7 @@ function ActivityTracker() {
                   })}
 
                   <div className="status-cell">
-                    {getStatusEmoji(progress, expectedProgress)}
+                    {getStatusEmoji(progress, 100)}
                     <span className={`progress-text ${progressColorClass}`}>
                       {progress.toFixed(1)}%
                     </span>
@@ -692,10 +624,10 @@ function ActivityTracker() {
                       className="settings-button"
                       onClick={() => setExpandedActivities(prev => ({
                         ...prev,
-                        [activity._id]: !prev[activity._id]
+                        [activity.id]: !prev[activity.id]
                       }))}
                     >
-                      {expandedActivities[activity._id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                      {expandedActivities[activity.id] ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                     </button>
                     <button
                       className="settings-button"
@@ -707,7 +639,7 @@ function ActivityTracker() {
                 </div>
 
                 {/* Past weeks rows */}
-                {expandedActivities[activity._id] && [1, 2, 3].map(weeksAgo => {
+                {expandedActivities[activity.id] && [1, 2, 3].map(weeksAgo => {
                     const pastWeekDates = getPastWeekDates(weeksAgo);
                     const weekProgress = calculateProgress(activity, pastWeekDates); // Now passing the correct dates
                     const weekProgressClass = getProgressColor(weekProgress, 100);

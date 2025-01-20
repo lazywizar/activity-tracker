@@ -33,9 +33,9 @@ export const getStatusEmoji = (progress, expectedProgress) => {
 
   if (progressRatio >= 1.0) {
     return '🏆'; // Trophy for achieving goal
-  } else if (progressRatio >= 0.75) {
+  } else if (progressRatio >= 0.6) {
     return '🌳'; // Full tree for great progress
-  } else if (progressRatio >= 0.5) {
+  } else if (progressRatio >= 0.3) {
     return '🌿'; // Leafy plant for good progress
   } else if (progressRatio > 0) {
     return '🌱'; // Seedling for started
@@ -48,9 +48,9 @@ export const getProgressColor = (actualProgress, expectedProgress) => {
   const progressRatio = actualProgress / (expectedProgress || 1);
 
   if (progressRatio >= 1.0) return 'text-green-600';
-  if (progressRatio >= 0.75) return 'text-green-500';
-  if (progressRatio >= 0.5) return 'text-yellow-600';
-  if (progressRatio > 0) return 'text-yellow-500';
+  if (progressRatio >= 0.6) return 'text-green-500';
+  if (progressRatio >= 0.3) return 'text-yellow-500';
+  if (progressRatio > 0) return 'text-red-500';
   return 'text-gray-400';
 };
 

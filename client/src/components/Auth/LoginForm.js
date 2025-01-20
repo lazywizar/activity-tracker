@@ -10,20 +10,62 @@ export const LoginForm = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [rememberMe, setRememberMe] = useState(false);
-  const { login } = useAuth();
+  const { login, forgotPassword } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setIsLoading(true);
 
-    const result = await login(email, password, rememberMe);
-    if (!result.success) {
-      setError(result.error);
+    try {
+      await login(email, password);
+      // No need to check success, Firebase will throw on error
+    } catch (error) {
+      console.log('Login error code:', error.code); // Debug log
+      setError(getFirebaseErrorMessage(error.code || error.message));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      setError('Please enter your email address');
+      return;
     }
 
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+      await forgotPassword(email);
+      setError(''); // Clear any existing errors
+      alert('Password reset email sent. Please check your inbox.');
+    } catch (error) {
+      setError(getFirebaseErrorMessage(error.code));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Convert Firebase error codes to user-friendly messages
+  const getFirebaseErrorMessage = (errorCode) => {
+    switch (errorCode) {
+      case 'auth/invalid-email':
+        return 'Please enter a valid email';
+      case 'auth/user-disabled':
+        return 'Account disabled. Please contact support.';
+      case 'auth/user-not-found':
+      case 'auth/invalid-credential':
+        return 'User not registered or invalid credentials.... would you like to sign up?';
+      case 'auth/wrong-password':
+        return 'Incorrect password. Try again or reset password.';
+      case 'auth/too-many-requests':
+        return 'Too many attempts. Please try again later.';
+      case 'auth/network-request-failed':
+        return 'Network error. Please check your connection.';
+      default:
+        console.error('Firebase auth error:', errorCode);
+        return 'Something went wrong. Please try again.';
+    }
   };
 
   return (
@@ -50,87 +92,57 @@ export const LoginForm = () => {
             <input
               id="email"
               type="email"
-              required
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg
-                        focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500
-                        text-gray-900 placeholder-gray-400 text-sm"
-              placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              placeholder="you@example.com"
+              required
             />
           </div>
         </div>
 
-        <PasswordInput
-          id="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password"
-          label="Password"
-        />
+        <div className="space-y-1">
+          <label htmlFor="password" className="text-sm font-medium text-gray-700">
+            Password
+          </label>
+          <PasswordInput
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
 
         <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <input
-              id="remember-me"
-              type="checkbox"
-              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-              checked={rememberMe}
-              onChange={(e) => setRememberMe(e.target.checked)}
-            />
-            <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-              Remember me
-            </label>
-          </div>
-
-          <Link
-            to="/forgot-password"
+          <button
+            type="button"
+            onClick={handleForgotPassword}
             className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
           >
-            Forgot password?
+            Forgot your password?
+          </button>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <Loader2 className="h-5 w-5 animate-spin" />
+            ) : (
+              'Sign in'
+            )}
+          </button>
+        </div>
+
+        <div className="text-sm text-center">
+          <span className="text-gray-500">Don't have an account? </span>
+          <Link to="/register" className="font-medium text-indigo-600 hover:text-indigo-500">
+            Sign up
           </Link>
         </div>
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full flex items-center justify-center px-4 py-2 text-sm font-medium
-                    text-white bg-gradient-to-r from-indigo-600 to-purple-600
-                    rounded-lg hover:from-indigo-700 hover:to-purple-700
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                    disabled:opacity-50 disabled:cursor-not-allowed
-                    transition-colors duration-200"
-        >
-          {isLoading ? (
-            <div className="flex items-center">
-              <Loader2 className="animate-spin -ml-1 mr-2 h-5 w-5" />
-              Signing in...
-            </div>
-          ) : (
-            'Sign in'
-          )}
-        </button>
-
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              New to Mōmentum?
-            </span>
-          </div>
-        </div>
-
-        <Link
-          to="/register"
-          className="w-full flex justify-center px-4 py-2 text-sm font-medium
-                    text-indigo-600 bg-indigo-50 rounded-lg
-                    hover:bg-indigo-100 transition-colors duration-200
-                    focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-        >
-          Create an account
-        </Link>
       </form>
     </AuthLayout>
   );

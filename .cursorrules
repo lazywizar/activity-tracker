@@ -1,0 +1,5 @@
+- Minimize code change, and make small increments to progressively test one feature at a time.
+- Ensure no visual elements are changed. Forms or buttons or any layout should not change
+- Login by google should be last stage do not make changes for that yet.
+- Check if an existing file exists and place the new logic there instead of creating a brand new file as far as needed.
+- Keep code modular and logically simple named files

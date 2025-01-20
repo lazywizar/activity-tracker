@@ -1,8 +1,15 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { jwtDecode } from 'jwt-decode';
-
+import axios from 'axios';
+import { 
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  sendPasswordResetEmail,
+  sendEmailVerification,
+  onAuthStateChanged
+} from 'firebase/auth';
+import { auth } from '../../config/firebase';
 
 const AuthContext = createContext(null);
 
@@ -13,169 +20,115 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing token on mount
-    const initializeAuth = async () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      const storedUser = localStorage.getItem('user') || sessionStorage.getItem('user');
-
-      if (token && storedUser) {
-        // First check if token is expired
-        if (isTokenExpired(token)) {
-          logout();
-          setLoading(false);
-          return;
-        }
-
+    // Listen for auth state changes
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
         try {
-          // Verify token is still valid with the backend
-          axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+          // Get the ID token
+          const idToken = await firebaseUser.getIdToken();
+          
+          // Set axios default header
+          axios.defaults.headers.common['Authorization'] = `Bearer ${idToken}`;
+          
+          // Create user in Firestore if new
+          await axios.post(`${process.env.REACT_APP_API_URL}/auth/create-user`, {
+            user: {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email
+            }
+          });
 
-          // Make a request to verify the token
-          const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/auth/verify`);
-          setUser(data.user);
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email,
+            emailVerified: firebaseUser.emailVerified
+          });
           setIsAuthenticated(true);
         } catch (error) {
-          console.error('Token verification failed:', error);
-          logout();
+          console.error('Error setting up user:', error);
+          await signOut(auth);
+          setUser(null);
+          setIsAuthenticated(false);
         }
+      } else {
+        setUser(null);
+        setIsAuthenticated(false);
+        delete axios.defaults.headers.common['Authorization'];
       }
       setLoading(false);
-    };
+    });
 
-    initializeAuth();
+    return () => unsubscribe();
   }, []);
 
-  const login = async (email, password, rememberMe) => {
+  const login = async (email, password) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/login`, {
-        email,
-        password
-      });
-
-      const { token, user } = response.data;
-
-      // Check if token is valid before storing
-      if (isTokenExpired(token)) {
-        return {
-          success: false,
-          error: 'Invalid token received'
-        };
-      }
-
-      // Clear both storages first
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      sessionStorage.removeItem('token');
-      sessionStorage.removeItem('user');
-
-      // Use localStorage for "remember me", sessionStorage otherwise
-      const storage = rememberMe ? localStorage : sessionStorage;
-      storage.setItem('token', token);
-      storage.setItem('user', JSON.stringify(user));
-
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
-      setIsAuthenticated(true);
-      navigate('/dashboard');
-      return { success: true };
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
+      axios.defaults.headers.common['Authorization'] = `Bearer ${idToken}`;
+      return userCredential.user;
     } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Login failed'
-      };
+      console.error('Login error:', error.code, error.message);
+      // Rethrow the original Firebase error to preserve the error code
+      throw error;
     }
   };
-
-  // Add periodic token check
-  useEffect(() => {
-    const checkToken = async () => {
-      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-      if (token && isTokenExpired(token)) {
-        logout();
-      }
-    };
-
-    const interval = setInterval(checkToken, 60000); // Check every minute
-    return () => clearInterval(interval);
-  }, []);
 
   const register = async (email, password) => {
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_URL}/auth/register`, {
-        email,
-        password
-      });
-
-      const { token, user } = response.data;
-
-      if (isTokenExpired(token)) {
-        return {
-          success: false,
-          error: 'Invalid token received'
-        };
-      }
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser(user);
-      setIsAuthenticated(true);
-      navigate('/dashboard'); // Redirect to main app after registration
-      return { success: true };
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      await sendEmailVerification(userCredential.user);
+      return userCredential.user;
     } catch (error) {
-      return {
-        success: false,
-        error: error.response?.data?.message || 'Registration failed'
-      };
+      console.error('Registration error:', error.message);
+      throw error;
     }
   };
 
-  const isTokenExpired = (token) => {
+  const logout = async () => {
     try {
-      const decoded = jwtDecode(token);
-      if (!decoded) return true;
-      return decoded.exp * 1000 < Date.now();
+      await signOut(auth);
+      navigate('/login');
     } catch (error) {
-      return true;
+      console.error('Logout error:', error.message);
+      throw error;
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    sessionStorage.removeItem('token');
-    sessionStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
-    setUser(null);
-    setIsAuthenticated(false);
-    navigate('/login');
+  const forgotPassword = async (email) => {
+    try {
+      await sendPasswordResetEmail(auth, email);
+    } catch (error) {
+      console.error('Password reset error:', error.message);
+      throw error;
+    }
   };
 
-  // Add axios interceptor to handle 401 errors
-  useEffect(() => {
-    const interceptor = axios.interceptors.response.use(
-      (response) => response,
-      (error) => {
-        if (error.response?.status === 401) {
-          logout();
-        }
-        return Promise.reject(error);
+  const resendVerificationEmail = async () => {
+    try {
+      if (auth.currentUser) {
+        await sendEmailVerification(auth.currentUser);
       }
-    );
+    } catch (error) {
+      console.error('Email verification error:', error.message);
+      throw error;
+    }
+  };
 
-    return () => axios.interceptors.response.eject(interceptor);
-  }, []);
+  const value = {
+    user,
+    loading,
+    isAuthenticated,
+    login,
+    logout,
+    register,
+    forgotPassword,
+    resendVerificationEmail
+  };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      login,
-      register,
-      logout,
-      loading,
-      isAuthenticated
-    }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
   );
 };
