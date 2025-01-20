@@ -134,3 +134,4 @@ dist
 .pnp.*
 script/package-lock.json
 .windsurfrules
+GCP_SECRETS_.prod.sh

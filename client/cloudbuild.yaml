@@ -18,6 +18,8 @@ steps:
       - '--allow-unauthenticated'
       - '--min-instances'
       - '1'
+      - '--set-secrets'
+      - 'REACT_APP_API_URL=react-app-api-url:latest,REACT_APP_FIREBASE_API_KEY=react-app-firebase-api-key:latest,REACT_APP_FIREBASE_AUTH_DOMAIN=react-app-firebase-auth-domain:latest,REACT_APP_FIREBASE_PROJECT_ID=react-app-firebase-project-id:latest,REACT_APP_FIREBASE_STORAGE_BUCKET=react-app-firebase-storage-bucket:latest,REACT_APP_FIREBASE_MESSAGING_SENDER_ID=react-app-firebase-messaging-sender-id:latest,REACT_APP_FIREBASE_APP_ID=react-app-firebase-app-id:latest,REACT_APP_FIREBASE_MEASUREMENT_ID=react-app-firebase-measurement-id:latest'
 
 images:
   - 'gcr.io/mymomentumapp/momentum-client'
