@@ -1,5 +1,3 @@
-import { SmileEmoji, MehEmoji, FrownEmoji } from '../components/icons/EmojiIcons';
-
 export const isPastDay = (date) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -33,21 +31,27 @@ export const calculateExpectedProgress = (weekDates) => {
 export const getStatusEmoji = (progress, expectedProgress) => {
   const progressRatio = progress / (expectedProgress || 1);
 
-  if (progressRatio >= 0.9) {
-    return <SmileEmoji color="#22c55e" />; // green
-  } else if (progressRatio >= 0.6) {
-    return <MehEmoji color="#eab308" />; // yellow
+  if (progressRatio >= 1.0) {
+    return '🏆'; // Trophy for achieving goal
+  } else if (progressRatio >= 0.75) {
+    return '🌳'; // Full tree for great progress
+  } else if (progressRatio >= 0.5) {
+    return '🌿'; // Leafy plant for good progress
+  } else if (progressRatio > 0) {
+    return '🌱'; // Seedling for started
   } else {
-    return <FrownEmoji color="#ef4444" />; // red
+    return '🌰'; // Seed for no progress
   }
 };
 
 export const getProgressColor = (actualProgress, expectedProgress) => {
   const progressRatio = actualProgress / (expectedProgress || 1);
 
-  if (progressRatio >= 0.9) return 'text-green-600';
-  if (progressRatio >= 0.6) return 'text-yellow-600';
-  return 'text-red-600';
+  if (progressRatio >= 1.0) return 'text-green-600';
+  if (progressRatio >= 0.75) return 'text-green-500';
+  if (progressRatio >= 0.5) return 'text-yellow-600';
+  if (progressRatio > 0) return 'text-yellow-500';
+  return 'text-gray-400';
 };
 
 export const generateDateRange = (startDate, endDate) => {
