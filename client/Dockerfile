@@ -33,7 +33,7 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Debug: Print environment variables
+# Debug: Print environment variables during build
 RUN echo "Environment variables during build:"
 RUN printenv | grep REACT_APP
 
@@ -42,10 +42,6 @@ RUN npm run build
 
 # Use an official Nginx image to serve the static files
 FROM nginx:alpine
-
-# Debug: Print environment variables in final image
-RUN echo "Environment variables in nginx:"
-RUN printenv | grep REACT_APP
 
 # Copy the build output to the Nginx html directory
 COPY --from=build /app/build /usr/share/nginx/html
