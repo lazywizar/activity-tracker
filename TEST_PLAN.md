@@ -6,22 +6,22 @@ This document outlines the manual test plan for the Activity Tracker application
 
 ### 1.1 User Registration
 - [x] Register with valid email and password
-- [ ] Verify email validation (try invalid email format)
-- [ ] Verify password requirements (try short password)
+- [x] Verify email validation (try invalid email format)
+- [] Verify password requirements (try short password)
 
 **Expected**: Success message, redirect to login, email verification sent
 
 ### 1.2 User Login
-- [ ] Login with registered email/password
-- [ ] Try incorrect password
-- [ ] Try non-existent email
+- [x] Login with registered email/password
+- [x] Try incorrect password
+- [x] Try non-existent email
 
 **Expected**: Successful login redirects to dashboard, error messages for invalid attempts
 
 ### 1.3 Session Management
-- [ ] Close and reopen browser
-- [ ] Check if session persists
-- [ ] Test logout functionality
+- [x] Close and reopen browser
+- [x] Check if session persists
+- [x] Test logout functionality
 
 **Expected**: Session should persist on browser restart, logout should clear session
 

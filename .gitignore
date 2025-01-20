@@ -6,6 +6,7 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
+GCP_SECRETS_.prod.md
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
@@ -134,3 +135,7 @@ dist
 .pnp.*
 script/package-lock.json
 .windsurfrules
+TEST_PLAN.md
+TEST_PLAN.md
+TEST_PLAN.md
+GCP_SECRETS_.prod.sh
