@@ -4,6 +4,8 @@ import { useAuth } from './AuthContext';
 import { Mail, Loader2 } from 'lucide-react';
 import AuthLayout from './AuthLayout';
 import PasswordInput from './PasswordInput';
+import { auth, googleProvider } from '../../config/firebase';
+import { signInWithPopup } from 'firebase/auth';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -54,7 +56,37 @@ export const LoginForm = () => {
     }
   };
 
-  // Convert Firebase error codes to user-friendly messages
+  const handleGoogleSignIn = async (e) => {
+    e?.preventDefault();
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      console.log('Starting Google sign-in...', { auth: !!auth });
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Google sign-in successful!', result.user);
+    } catch (error) {
+      console.error('Google sign-in error:', {
+        code: error.code,
+        message: error.message,
+        fullError: error
+      });
+      
+      if (error.code === 'auth/popup-blocked') {
+        setError('Please allow popups for this website to sign in with Google.');
+      } else if (error.code === 'auth/popup-closed-by-user') {
+        setError('Sign-in was cancelled. Please try again.');
+      } else if (error.code === 'auth/unauthorized-domain') {
+        setError('This domain is not authorized for Google sign-in. Please contact support.');
+      } else {
+        setError('Failed to sign in with Google. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const getFirebaseErrorMessage = (errorCode) => {
     switch (errorCode) {
       case 'auth/invalid-email':
@@ -157,7 +189,31 @@ export const LoginForm = () => {
             Sign up
           </Link>
         </div>
+
+        <div className="auth-divider">
+          <span>or</span>
+        </div>
+
+        <button 
+          type="button"
+          onClick={handleGoogleSignIn}
+          className="google-sign-in-button"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <img 
+              src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" 
+              alt="Google"
+              className="google-icon"
+            />
+          )}
+          Sign in with Google
+        </button>
       </form>
     </AuthLayout>
   );
 };
+
+export default LoginForm;

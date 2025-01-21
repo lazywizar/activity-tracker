@@ -640,3 +640,71 @@ input[type="number"] {
   border-style: solid;
   border-color: transparent transparent #1f2937 transparent;
 }
+
+/* Google Sign-In Button */
+.auth-divider {
+  text-align: center;
+  margin: 20px 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  position: absolute;
+  height: 1px;
+  background-color: #e5e7eb;
+  width: calc(50% - 24px);
+}
+
+.auth-divider::before {
+  left: 0;
+}
+
+.auth-divider::after {
+  right: 0;
+}
+
+.auth-divider span {
+  background-color: white;
+  padding: 0 12px;
+  color: #6b7280;
+  font-size: 0.875rem;
+  z-index: 1;
+}
+
+.google-sign-in-button {
+  width: 100%;
+  padding: 8px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background-color: white;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.google-sign-in-button:hover {
+  background-color: #f9fafb;
+}
+
+.google-sign-in-button:focus {
+  outline: none;
+  ring: 2px;
+  ring-offset: 2px;
+  ring-color: #e5e7eb;
+}
+
+.google-icon {
+  width: 18px;
+  height: 18px;
+}
