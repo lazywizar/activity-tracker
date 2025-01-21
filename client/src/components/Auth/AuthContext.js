@@ -1,7 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { 
+import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
@@ -26,11 +26,12 @@ export const AuthProvider = ({ children }) => {
         try {
           // Get the ID token
           const idToken = await firebaseUser.getIdToken();
-          
+
           // Set axios default header
           axios.defaults.headers.common['Authorization'] = `Bearer ${idToken}`;
-          
+
           // Create user in Firestore if new
+          console.log('[DEBUG] API URL:', process.env.REACT_APP_API_URL);
           await axios.post(`${process.env.REACT_APP_API_URL}/auth/create-user`, {
             user: {
               uid: firebaseUser.uid,
