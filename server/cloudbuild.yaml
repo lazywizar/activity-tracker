@@ -20,11 +20,9 @@ steps:
           echo "JWT_SECRET=$$(gcloud secrets versions access latest --secret="jwt-secret" --project="mymomentumapp")"
         ) > server/.env
         
-        echo "Contents of .env file (masked):"
-        cat server/.env | sed 's/=.*$/=****/'
-        
-        echo "Verifying .env file location and permissions:"
-        ls -la server/.env
+        echo "Environment file created successfully"
+        echo "Verifying .env file exists:"
+        ls -l server/.env
 
   # Build step
   - name: 'gcr.io/cloud-builders/docker'

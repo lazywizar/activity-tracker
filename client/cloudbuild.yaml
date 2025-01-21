@@ -1,17 +1,10 @@
 steps:
-  # Debug step: Verify secret access and create .env
+  # Create .env file with secrets
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "Testing secret access..."
-        REACT_APP_API_URL=$$(gcloud secrets versions access latest --secret="react-app-api-url" --project="mymomentumapp")
-        REACT_APP_FIREBASE_API_KEY=$$(gcloud secrets versions access latest --secret="react-app-firebase-api-key" --project="mymomentumapp")
-        echo "API URL: $$REACT_APP_API_URL"
-        echo "Firebase API Key: $$REACT_APP_FIREBASE_API_KEY"
-        
-        # Create .env file with proper formatting
         echo "Creating .env file..."
         (
           echo "REACT_APP_API_URL=$$(gcloud secrets versions access latest --secret="react-app-api-url" --project="mymomentumapp")"
@@ -24,11 +17,9 @@ steps:
           echo "REACT_APP_FIREBASE_MEASUREMENT_ID=$$(gcloud secrets versions access latest --secret="react-app-firebase-measurement-id" --project="mymomentumapp")"
         ) > client/.env
         
-        echo "Contents of .env file (masked):"
-        cat client/.env | sed 's/=.*$/=****/'
-        
-        echo "Verifying .env file location and permissions:"
-        ls -la client/.env
+        echo "Environment file created successfully"
+        echo "Verifying .env file exists:"
+        ls -l client/.env
 
   # Build step
   - name: 'gcr.io/cloud-builders/docker'

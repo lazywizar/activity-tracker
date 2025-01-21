@@ -16,10 +16,8 @@ COPY . .
 # Create directory for env file
 RUN mkdir -p /app/config
 
-# Debug: Print environment variables from .env file and load them properly
+# Load environment variables from .env file
 RUN if [ -f .env ]; then \
-    echo "Contents of .env file (masked):" && \
-    cat .env | sed 's/=.*$/=****/' && \
     echo "#!/bin/sh" > /app/config/env.sh && \
     while IFS='=' read -r key value; do \
       # Skip empty lines and comments
@@ -35,7 +33,7 @@ RUN if [ -f .env ]; then \
       fi \
     done < .env && \
     chmod +x /app/config/env.sh && \
-    echo "Environment file created successfully"; \
+    echo "Environment variables loaded successfully"; \
   else \
     echo ".env file not found"; \
     exit 1; \

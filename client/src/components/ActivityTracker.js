@@ -8,13 +8,13 @@ import BrandText from './BrandText';
 import { debounce } from 'lodash';
 import ActivitySettingsModal from './modals/ActivitySettingsModal';
 import DateRangeModal from './modals/DateRangeModal';
-import { 
-  isPastDay, 
-  calculateExpectedProgress, 
-  getStatusEmoji, 
+import {
+  isPastDay,
+  calculateExpectedProgress,
+  getStatusEmoji,
   getProgressColor,
   generateDateRange,
-  formatDateForCSV 
+  formatDateForCSV
 } from '../utils/activityUtils';
 
 function ActivityTracker() {
@@ -576,7 +576,7 @@ function ActivityTracker() {
                         </div>
                       )}
                     </div>
-                    <div className="activity-goal">{activity.weeklyGoalHours} hr goal / wk</div>
+                    <div className="activity-goal">goal {activity.weeklyGoalHours} hr / wk</div>
                   </div>
 
                   {weekDates.map((date) => {

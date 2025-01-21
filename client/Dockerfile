@@ -13,12 +13,10 @@ RUN npm install
 # Copy the rest of the application code including .env
 COPY . .
 
-# Debug: Print environment variables from .env file
+# Load environment variables
 RUN if [ -f .env ]; then \
-    echo "Contents of .env file:" && cat .env && \
     export $(cat .env | xargs) && \
-    echo "Environment Variables after export:" && \
-    printenv | grep REACT_APP; \
+    echo "Environment variables loaded successfully"; \
     else \
     echo ".env file not found"; \
     fi
