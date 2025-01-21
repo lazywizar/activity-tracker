@@ -48,19 +48,19 @@ options:
 
 availableSecrets:
   secretManager:
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_API_URL/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-api-url/versions/latest
       env: '_REACT_APP_API_URL'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_API_KEY/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-api-key/versions/latest
       env: '_REACT_APP_FIREBASE_API_KEY'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_AUTH_DOMAIN/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-auth-domain/versions/latest
       env: '_REACT_APP_FIREBASE_AUTH_DOMAIN'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_PROJECT_ID/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-project-id/versions/latest
       env: '_REACT_APP_FIREBASE_PROJECT_ID'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_STORAGE_BUCKET/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-storage-bucket/versions/latest
       env: '_REACT_APP_FIREBASE_STORAGE_BUCKET'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_MESSAGING_SENDER_ID/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-messaging-sender-id/versions/latest
       env: '_REACT_APP_FIREBASE_MESSAGING_SENDER_ID'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_APP_ID/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-app-id/versions/latest
       env: '_REACT_APP_FIREBASE_APP_ID'
-    - versionName: projects/$PROJECT_ID/secrets/_REACT_APP_FIREBASE_MEASUREMENT_ID/versions/latest
+    - versionName: projects/$PROJECT_ID/secrets/react-app-firebase-measurement-id/versions/latest
       env: '_REACT_APP_FIREBASE_MEASUREMENT_ID'
