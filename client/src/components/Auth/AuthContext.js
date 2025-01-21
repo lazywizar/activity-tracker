@@ -31,7 +31,6 @@ export const AuthProvider = ({ children }) => {
           axios.defaults.headers.common['Authorization'] = `Bearer ${idToken}`;
 
           // Create user in Firestore if new
-          console.log('[DEBUG] API URL:', process.env.REACT_APP_API_URL);
           await axios.post(`${process.env.REACT_APP_API_URL}/auth/create-user`, {
             user: {
               uid: firebaseUser.uid,

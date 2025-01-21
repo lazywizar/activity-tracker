@@ -1,42 +1,52 @@
+# Use an official Node.js runtime as a parent image
 FROM node:18
 
+# Set the working directory
 WORKDIR /app
 
+# Copy package.json and package-lock.json
 COPY package*.json ./
 
+# Install dependencies
 RUN npm install
 
+# Copy the rest of the application code including .env
 COPY . .
+
+# Create directory for env file
+RUN mkdir -p /app/config
 
 # Debug: Print environment variables from .env file and load them properly
 RUN if [ -f .env ]; then \
-    echo "Contents of .env file (masked):" && cat .env | sed 's/=.*$/=****/' && \
-    # Load each variable individually, preserving newlines and special characters
+    echo "Contents of .env file (masked):" && \
+    cat .env | sed 's/=.*$/=****/' && \
+    echo "#!/bin/sh" > /app/config/env.sh && \
     while IFS='=' read -r key value; do \
-      if [ -n "$key" ] && [ -n "$value" ]; then \
-        # Remove any comments
-        key=$(echo $key | sed 's/#.*//g' | xargs) && \
-        # Skip empty lines or comment lines
-        if [ -n "$key" ] && [[ ! "$key" =~ ^# ]]; then \
-          # Preserve the exact value including newlines and special chars
-          echo "export $key='$value'" >> /app/env.sh; \
-        fi \
+      # Skip empty lines and comments
+      case "$key" in \
+        ''|\#*) continue ;; \
+      esac; \
+      # Remove any trailing/leading whitespace
+      key=$(echo "$key" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'); \
+      if [ -n "$key" ]; then \
+        # Properly escape the value for shell
+        escaped_value=$(echo "$value" | sed "s/'/'\\\\''/g"); \
+        echo "export $key='$escaped_value'" >> /app/config/env.sh; \
       fi \
     done < .env && \
-    chmod +x /app/env.sh && \
+    chmod +x /app/config/env.sh && \
     echo "Environment file created successfully"; \
-    else \
+  else \
     echo ".env file not found"; \
-    fi
+    exit 1; \
+  fi
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=8080
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8080/api/health || exit 1
-
+# Expose the port the app runs on
 EXPOSE 8080
 
-CMD ["/bin/bash", "-c", "source /app/env.sh && npm start"]
+# Start the application with environment variables
+CMD ["/bin/sh", "-c", ". /app/config/env.sh && npm start"]
