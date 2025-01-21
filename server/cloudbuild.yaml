@@ -6,24 +6,19 @@ steps:
       - '-c'
       - |
         echo "Creating .env file with secrets..."
-        cat > server/.env << 'EOL'
-FIREBASE_TYPE=$$(gcloud secrets versions access latest --secret="firebase-type" --project="mymomentumapp")
-FIREBASE_PROJECT_ID=$$(gcloud secrets versions access latest --secret="firebase-project-id" --project="mymomentumapp")
-FIREBASE_PRIVATE_KEY_ID=$$(gcloud secrets versions access latest --secret="firebase-private-key-id" --project="mymomentumapp")
-FIREBASE_PRIVATE_KEY=$$(gcloud secrets versions access latest --secret="firebase-private-key" --project="mymomentumapp")
-FIREBASE_CLIENT_EMAIL=$$(gcloud secrets versions access latest --secret="firebase-client-email" --project="mymomentumapp")
-FIREBASE_CLIENT_ID=$$(gcloud secrets versions access latest --secret="firebase-client-id" --project="mymomentumapp")
-FIREBASE_AUTH_URI=$$(gcloud secrets versions access latest --secret="firebase-auth-uri" --project="mymomentumapp")
-FIREBASE_TOKEN_URI=$$(gcloud secrets versions access latest --secret="firebase-token-uri" --project="mymomentumapp")
-FIREBASE_AUTH_PROVIDER_X509_CERT_URL=$$(gcloud secrets versions access latest --secret="firebase-auth-provider-x509-cert-url" --project="mymomentumapp")
-FIREBASE_CLIENT_X509_CERT_URL=$$(gcloud secrets versions access latest --secret="firebase-client-x509-cert-url" --project="mymomentumapp")
-JWT_SECRET=$$(gcloud secrets versions access latest --secret="jwt-secret" --project="mymomentumapp")
-EOL
-        
-        # Execute the commands in the .env file to replace the variables
-        eval "cat > server/.env << EOF
-$$(cat server/.env)
-EOF"
+        (
+          echo "FIREBASE_TYPE=$$(gcloud secrets versions access latest --secret="firebase-type" --project="mymomentumapp")"
+          echo "FIREBASE_PROJECT_ID=$$(gcloud secrets versions access latest --secret="firebase-project-id" --project="mymomentumapp")"
+          echo "FIREBASE_PRIVATE_KEY_ID=$$(gcloud secrets versions access latest --secret="firebase-private-key-id" --project="mymomentumapp")"
+          echo "FIREBASE_PRIVATE_KEY=$$(gcloud secrets versions access latest --secret="firebase-private-key" --project="mymomentumapp")"
+          echo "FIREBASE_CLIENT_EMAIL=$$(gcloud secrets versions access latest --secret="firebase-client-email" --project="mymomentumapp")"
+          echo "FIREBASE_CLIENT_ID=$$(gcloud secrets versions access latest --secret="firebase-client-id" --project="mymomentumapp")"
+          echo "FIREBASE_AUTH_URI=$$(gcloud secrets versions access latest --secret="firebase-auth-uri" --project="mymomentumapp")"
+          echo "FIREBASE_TOKEN_URI=$$(gcloud secrets versions access latest --secret="firebase-token-uri" --project="mymomentumapp")"
+          echo "FIREBASE_AUTH_PROVIDER_X509_CERT_URL=$$(gcloud secrets versions access latest --secret="firebase-auth-provider-x509-cert-url" --project="mymomentumapp")"
+          echo "FIREBASE_CLIENT_X509_CERT_URL=$$(gcloud secrets versions access latest --secret="firebase-client-x509-cert-url" --project="mymomentumapp")"
+          echo "JWT_SECRET=$$(gcloud secrets versions access latest --secret="jwt-secret" --project="mymomentumapp")"
+        ) > server/.env
         
         echo "Contents of .env file (masked):"
         cat server/.env | sed 's/=.*$/=****/'
@@ -54,6 +49,9 @@ EOF"
       - 'managed'
       - '--region'
       - 'us-central1'
+      - '--allow-unauthenticated'
+      - '--min-instances'
+      - '1'
 
 images:
   - 'gcr.io/mymomentumapp/momentum-server'
