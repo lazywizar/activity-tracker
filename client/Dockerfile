@@ -4,56 +4,24 @@ FROM node:18 AS build
 # Set the working directory
 WORKDIR /app
 
-# Declare build arguments with defaults to prevent errors
-ARG REACT_APP_API_URL=""
-ARG REACT_APP_FIREBASE_API_KEY=""
-ARG REACT_APP_FIREBASE_AUTH_DOMAIN=""
-ARG REACT_APP_FIREBASE_PROJECT_ID=""
-ARG REACT_APP_FIREBASE_STORAGE_BUCKET=""
-ARG REACT_APP_FIREBASE_MESSAGING_SENDER_ID=""
-ARG REACT_APP_FIREBASE_APP_ID=""
-ARG REACT_APP_FIREBASE_MEASUREMENT_ID=""
-
-# Debug: Print build arguments
-RUN echo "Build Arguments:" && \
-    echo "REACT_APP_API_URL: ${REACT_APP_API_URL}" && \
-    echo "REACT_APP_FIREBASE_API_KEY: ${REACT_APP_FIREBASE_API_KEY}" && \
-    echo "REACT_APP_FIREBASE_AUTH_DOMAIN: ${REACT_APP_FIREBASE_AUTH_DOMAIN}" && \
-    echo "REACT_APP_FIREBASE_PROJECT_ID: ${REACT_APP_FIREBASE_PROJECT_ID}" && \
-    echo "REACT_APP_FIREBASE_STORAGE_BUCKET: ${REACT_APP_FIREBASE_STORAGE_BUCKET}" && \
-    echo "REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${REACT_APP_FIREBASE_MESSAGING_SENDER_ID}" && \
-    echo "REACT_APP_FIREBASE_APP_ID: ${REACT_APP_FIREBASE_APP_ID}" && \
-    echo "REACT_APP_FIREBASE_MEASUREMENT_ID: ${REACT_APP_FIREBASE_MEASUREMENT_ID}"
-
-# Set environment variables
-ENV REACT_APP_API_URL=${REACT_APP_API_URL}
-ENV REACT_APP_FIREBASE_API_KEY=${REACT_APP_FIREBASE_API_KEY}
-ENV REACT_APP_FIREBASE_AUTH_DOMAIN=${REACT_APP_FIREBASE_AUTH_DOMAIN}
-ENV REACT_APP_FIREBASE_PROJECT_ID=${REACT_APP_FIREBASE_PROJECT_ID}
-ENV REACT_APP_FIREBASE_STORAGE_BUCKET=${REACT_APP_FIREBASE_STORAGE_BUCKET}
-ENV REACT_APP_FIREBASE_MESSAGING_SENDER_ID=${REACT_APP_FIREBASE_MESSAGING_SENDER_ID}
-ENV REACT_APP_FIREBASE_APP_ID=${REACT_APP_FIREBASE_APP_ID}
-ENV REACT_APP_FIREBASE_MEASUREMENT_ID=${REACT_APP_FIREBASE_MEASUREMENT_ID}
-
-# Debug: Print environment variables
-RUN echo "Environment Variables:" && \
-    echo "REACT_APP_API_URL: ${REACT_APP_API_URL}" && \
-    echo "REACT_APP_FIREBASE_API_KEY: ${REACT_APP_FIREBASE_API_KEY}" && \
-    echo "REACT_APP_FIREBASE_AUTH_DOMAIN: ${REACT_APP_FIREBASE_AUTH_DOMAIN}" && \
-    echo "REACT_APP_FIREBASE_PROJECT_ID: ${REACT_APP_FIREBASE_PROJECT_ID}" && \
-    echo "REACT_APP_FIREBASE_STORAGE_BUCKET: ${REACT_APP_FIREBASE_STORAGE_BUCKET}" && \
-    echo "REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${REACT_APP_FIREBASE_MESSAGING_SENDER_ID}" && \
-    echo "REACT_APP_FIREBASE_APP_ID: ${REACT_APP_FIREBASE_APP_ID}" && \
-    echo "REACT_APP_FIREBASE_MEASUREMENT_ID: ${REACT_APP_FIREBASE_MEASUREMENT_ID}"
-
-# Copy package.json and package-lock.json
+# Copy package.json and package-lock.json first for better caching
 COPY package*.json ./
 
 # Install dependencies
 RUN npm install
 
-# Copy the rest of the application code
+# Copy the rest of the application code including .env
 COPY . .
+
+# Debug: Print environment variables from .env file
+RUN if [ -f .env ]; then \
+    echo "Contents of .env file:" && cat .env && \
+    export $(cat .env | xargs) && \
+    echo "Environment Variables after export:" && \
+    printenv | grep REACT_APP; \
+    else \
+    echo ".env file not found"; \
+    fi
 
 # Build the static files
 RUN npm run build

@@ -1,44 +1,38 @@
 steps:
-  # First step: Create a temporary .env file with the secrets
+  # Debug step: Verify secret access
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
       - '-c'
       - |
-        echo "Creating .env file with secrets..."
-        echo "REACT_APP_API_URL=$$_REACT_APP_API_URL" > client/.env
-        echo "REACT_APP_FIREBASE_API_KEY=$$_REACT_APP_FIREBASE_API_KEY" >> client/.env
-        echo "REACT_APP_FIREBASE_AUTH_DOMAIN=$$_REACT_APP_FIREBASE_AUTH_DOMAIN" >> client/.env
-        echo "REACT_APP_FIREBASE_PROJECT_ID=$$_REACT_APP_FIREBASE_PROJECT_ID" >> client/.env
-        echo "REACT_APP_FIREBASE_STORAGE_BUCKET=$$_REACT_APP_FIREBASE_STORAGE_BUCKET" >> client/.env
-        echo "REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$$_REACT_APP_FIREBASE_MESSAGING_SENDER_ID" >> client/.env
-        echo "REACT_APP_FIREBASE_APP_ID=$$_REACT_APP_FIREBASE_APP_ID" >> client/.env
-        echo "REACT_APP_FIREBASE_MEASUREMENT_ID=$$_REACT_APP_FIREBASE_MEASUREMENT_ID" >> client/.env
-    secretEnv: [
-      '_REACT_APP_API_URL',
-      '_REACT_APP_FIREBASE_API_KEY',
-      '_REACT_APP_FIREBASE_AUTH_DOMAIN',
-      '_REACT_APP_FIREBASE_PROJECT_ID',
-      '_REACT_APP_FIREBASE_STORAGE_BUCKET',
-      '_REACT_APP_FIREBASE_MESSAGING_SENDER_ID',
-      '_REACT_APP_FIREBASE_APP_ID',
-      '_REACT_APP_FIREBASE_MEASUREMENT_ID'
-    ]
+        echo "Testing secret access..."
+        REACT_APP_API_URL=$$(gcloud secrets versions access latest --secret="react-app-api-url" --project="mymomentumapp")
+        REACT_APP_FIREBASE_API_KEY=$$(gcloud secrets versions access latest --secret="react-app-firebase-api-key" --project="mymomentumapp")
+        echo "API URL: $$REACT_APP_API_URL"
+        echo "Firebase API Key: $$REACT_APP_FIREBASE_API_KEY"
+        
+        # Create .env file
+        echo "Creating .env file..."
+        cat > client/.env << EOL
+        REACT_APP_API_URL="$$REACT_APP_API_URL"
+        REACT_APP_FIREBASE_API_KEY="$$REACT_APP_FIREBASE_API_KEY"
+        REACT_APP_FIREBASE_AUTH_DOMAIN="$$(gcloud secrets versions access latest --secret="react-app-firebase-auth-domain" --project="mymomentumapp")"
+        REACT_APP_FIREBASE_PROJECT_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-project-id" --project="mymomentumapp")"
+        REACT_APP_FIREBASE_STORAGE_BUCKET="$$(gcloud secrets versions access latest --secret="react-app-firebase-storage-bucket" --project="mymomentumapp")"
+        REACT_APP_FIREBASE_MESSAGING_SENDER_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-messaging-sender-id" --project="mymomentumapp")"
+        REACT_APP_FIREBASE_APP_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-app-id" --project="mymomentumapp")"
+        REACT_APP_FIREBASE_MEASUREMENT_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-measurement-id" --project="mymomentumapp")"
+        EOL
+        
+        echo "Contents of .env file (masked):"
+        cat client/.env | sed 's/=.*$/=****/'
 
-  # Second step: Build the Docker image using the .env file
+  # Build step
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'client'
     args: [
       'build',
       '-t', 'gcr.io/mymomentumapp/momentum-client',
-      '--build-arg', 'REACT_APP_API_URL',
-      '--build-arg', 'REACT_APP_FIREBASE_API_KEY',
-      '--build-arg', 'REACT_APP_FIREBASE_AUTH_DOMAIN',
-      '--build-arg', 'REACT_APP_FIREBASE_PROJECT_ID',
-      '--build-arg', 'REACT_APP_FIREBASE_STORAGE_BUCKET',
-      '--build-arg', 'REACT_APP_FIREBASE_MESSAGING_SENDER_ID',
-      '--build-arg', 'REACT_APP_FIREBASE_APP_ID',
-      '--build-arg', 'REACT_APP_FIREBASE_MEASUREMENT_ID',
       '.'
     ]
 
@@ -62,22 +56,3 @@ images:
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
-availableSecrets:
-  secretManager:
-    - versionName: projects/mymomentumapp/secrets/react-app-api-url/versions/latest
-      env: '_REACT_APP_API_URL'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-api-key/versions/latest
-      env: '_REACT_APP_FIREBASE_API_KEY'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-auth-domain/versions/latest
-      env: '_REACT_APP_FIREBASE_AUTH_DOMAIN'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-project-id/versions/latest
-      env: '_REACT_APP_FIREBASE_PROJECT_ID'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-storage-bucket/versions/latest
-      env: '_REACT_APP_FIREBASE_STORAGE_BUCKET'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-messaging-sender-id/versions/latest
-      env: '_REACT_APP_FIREBASE_MESSAGING_SENDER_ID'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-app-id/versions/latest
-      env: '_REACT_APP_FIREBASE_APP_ID'
-    - versionName: projects/mymomentumapp/secrets/react-app-firebase-measurement-id/versions/latest
-      env: '_REACT_APP_FIREBASE_MEASUREMENT_ID'
