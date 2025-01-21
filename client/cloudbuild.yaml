@@ -1,3 +1,13 @@
+substitutions:
+  _REACT_APP_API_URL: "react-app-api-url"
+  _REACT_APP_FIREBASE_API_KEY: "react-app-firebase-api-key"
+  _REACT_APP_FIREBASE_AUTH_DOMAIN: "react-app-firebase-auth-domain"
+  _REACT_APP_FIREBASE_PROJECT_ID: "react-app-firebase-project-id"
+  _REACT_APP_FIREBASE_STORAGE_BUCKET: "react-app-firebase-storage-bucket"
+  _REACT_APP_FIREBASE_MESSAGING_SENDER_ID: "react-app-firebase-messaging-sender-id"
+  _REACT_APP_FIREBASE_APP_ID: "react-app-firebase-app-id"
+  _REACT_APP_FIREBASE_MEASUREMENT_ID: "react-app-firebase-measurement-id"
+
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'client'
@@ -24,8 +34,10 @@ steps:
       'REACT_APP_FIREBASE_APP_ID',
       'REACT_APP_FIREBASE_MEASUREMENT_ID'
     ]
+
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/mymomentumapp/momentum-client']
+
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
