@@ -14,10 +14,14 @@ RUN npm install
 COPY . .
 
 # Debug: Print environment variables from .env file
-RUN echo "Verifying .env file and environment variables:" && \
-    echo "Contents of directory:" && ls -la && \
-    echo "\nContents of .env file:" && cat .env && \
-    echo "\nEnvironment variables:" && printenv | grep REACT_APP
+RUN if [ -f .env ]; then \
+    echo "Contents of .env file:" && cat .env && \
+    export $(cat .env | xargs) && \
+    echo "Environment Variables after export:" && \
+    printenv | grep REACT_APP; \
+    else \
+    echo ".env file not found"; \
+    fi
 
 # Build the static files
 RUN npm run build
