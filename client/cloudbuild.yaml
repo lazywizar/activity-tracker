@@ -1,5 +1,5 @@
 steps:
-  # Debug step: Verify secret access
+  # Debug step: Verify secret access and create .env
   - name: 'gcr.io/cloud-builders/gcloud'
     entrypoint: 'bash'
     args:
@@ -11,21 +11,29 @@ steps:
         echo "API URL: $$REACT_APP_API_URL"
         echo "Firebase API Key: $$REACT_APP_FIREBASE_API_KEY"
         
-        # Create .env file
+        # Create .env file with proper formatting
         echo "Creating .env file..."
-        cat > client/.env << EOL
-        REACT_APP_API_URL="$$REACT_APP_API_URL"
-        REACT_APP_FIREBASE_API_KEY="$$REACT_APP_FIREBASE_API_KEY"
-        REACT_APP_FIREBASE_AUTH_DOMAIN="$$(gcloud secrets versions access latest --secret="react-app-firebase-auth-domain" --project="mymomentumapp")"
-        REACT_APP_FIREBASE_PROJECT_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-project-id" --project="mymomentumapp")"
-        REACT_APP_FIREBASE_STORAGE_BUCKET="$$(gcloud secrets versions access latest --secret="react-app-firebase-storage-bucket" --project="mymomentumapp")"
-        REACT_APP_FIREBASE_MESSAGING_SENDER_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-messaging-sender-id" --project="mymomentumapp")"
-        REACT_APP_FIREBASE_APP_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-app-id" --project="mymomentumapp")"
-        REACT_APP_FIREBASE_MEASUREMENT_ID="$$(gcloud secrets versions access latest --secret="react-app-firebase-measurement-id" --project="mymomentumapp")"
-        EOL
+        cat > client/.env << 'EOL'
+REACT_APP_API_URL=$$(gcloud secrets versions access latest --secret="react-app-api-url" --project="mymomentumapp")
+REACT_APP_FIREBASE_API_KEY=$$(gcloud secrets versions access latest --secret="react-app-firebase-api-key" --project="mymomentumapp")
+REACT_APP_FIREBASE_AUTH_DOMAIN=$$(gcloud secrets versions access latest --secret="react-app-firebase-auth-domain" --project="mymomentumapp")
+REACT_APP_FIREBASE_PROJECT_ID=$$(gcloud secrets versions access latest --secret="react-app-firebase-project-id" --project="mymomentumapp")
+REACT_APP_FIREBASE_STORAGE_BUCKET=$$(gcloud secrets versions access latest --secret="react-app-firebase-storage-bucket" --project="mymomentumapp")
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=$$(gcloud secrets versions access latest --secret="react-app-firebase-messaging-sender-id" --project="mymomentumapp")
+REACT_APP_FIREBASE_APP_ID=$$(gcloud secrets versions access latest --secret="react-app-firebase-app-id" --project="mymomentumapp")
+REACT_APP_FIREBASE_MEASUREMENT_ID=$$(gcloud secrets versions access latest --secret="react-app-firebase-measurement-id" --project="mymomentumapp")
+EOL
+        
+        # Execute the commands in the .env file to replace the variables
+        eval "cat > client/.env << EOF
+$$(cat client/.env)
+EOF"
         
         echo "Contents of .env file (masked):"
         cat client/.env | sed 's/=.*$/=****/'
+        
+        echo "Verifying .env file location and permissions:"
+        ls -la client/.env
 
   # Build step
   - name: 'gcr.io/cloud-builders/docker'

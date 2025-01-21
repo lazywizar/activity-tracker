@@ -8,6 +8,16 @@ RUN npm install --production
 
 COPY . .
 
+# Debug: Print environment variables from .env file
+RUN if [ -f .env ]; then \
+    echo "Contents of .env file:" && cat .env && \
+    export $(cat .env | sed 's/\r//g' | sed 's/#.*//g' | xargs) && \
+    echo "Environment Variables after export:" && \
+    printenv | grep -E "FIREBASE_|JWT_"; \
+    else \
+    echo ".env file not found"; \
+    fi
+
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=8080

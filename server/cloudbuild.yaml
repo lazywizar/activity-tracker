@@ -1,26 +1,59 @@
 steps:
+  # Create .env file with secrets
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Creating .env file with secrets..."
+        cat > server/.env << 'EOL'
+FIREBASE_TYPE=$$(gcloud secrets versions access latest --secret="firebase-type" --project="mymomentumapp")
+FIREBASE_PROJECT_ID=$$(gcloud secrets versions access latest --secret="firebase-project-id" --project="mymomentumapp")
+FIREBASE_PRIVATE_KEY_ID=$$(gcloud secrets versions access latest --secret="firebase-private-key-id" --project="mymomentumapp")
+FIREBASE_PRIVATE_KEY=$$(gcloud secrets versions access latest --secret="firebase-private-key" --project="mymomentumapp")
+FIREBASE_CLIENT_EMAIL=$$(gcloud secrets versions access latest --secret="firebase-client-email" --project="mymomentumapp")
+FIREBASE_CLIENT_ID=$$(gcloud secrets versions access latest --secret="firebase-client-id" --project="mymomentumapp")
+FIREBASE_AUTH_URI=$$(gcloud secrets versions access latest --secret="firebase-auth-uri" --project="mymomentumapp")
+FIREBASE_TOKEN_URI=$$(gcloud secrets versions access latest --secret="firebase-token-uri" --project="mymomentumapp")
+FIREBASE_AUTH_PROVIDER_X509_CERT_URL=$$(gcloud secrets versions access latest --secret="firebase-auth-provider-x509-cert-url" --project="mymomentumapp")
+FIREBASE_CLIENT_X509_CERT_URL=$$(gcloud secrets versions access latest --secret="firebase-client-x509-cert-url" --project="mymomentumapp")
+JWT_SECRET=$$(gcloud secrets versions access latest --secret="jwt-secret" --project="mymomentumapp")
+EOL
+        
+        # Execute the commands in the .env file to replace the variables
+        eval "cat > server/.env << EOF
+$$(cat server/.env)
+EOF"
+        
+        echo "Contents of .env file (masked):"
+        cat server/.env | sed 's/=.*$/=****/'
+        
+        echo "Verifying .env file location and permissions:"
+        ls -la server/.env
+
+  # Build step
   - name: 'gcr.io/cloud-builders/docker'
     dir: 'server'
-    args: ['build', '-t', 'gcr.io/mymomentumapp/momentum-server', '.']
+    args: [
+      'build',
+      '-t', 'gcr.io/mymomentumapp/momentum-server',
+      '.'
+    ]
+
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/mymomentumapp/momentum-server']
-  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
-    entrypoint: gcloud
+
+  - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
       - 'deploy'
       - 'momentum-server'
       - '--image'
       - 'gcr.io/mymomentumapp/momentum-server'
-      - '--region'
-      - 'us-central1'
       - '--platform'
       - 'managed'
-      - '--allow-unauthenticated'
-      - '--min-instances'
-      - '1'
-      - '--set-secrets'
-      - 'JWT_SECRET=jwt-secret:latest,FIREBASE_TYPE=firebase-type:latest,FIREBASE_PROJECT_ID=firebase-project-id:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_ID=firebase-client-id:latest,FIREBASE_AUTH_URI=firebase-auth-uri:latest,FIREBASE_TOKEN_URI=firebase-token-uri:latest,FIREBASE_AUTH_PROVIDER_X509_CERT_URL=firebase-auth-provider-x509-cert-url:latest,FIREBASE_CLIENT_X509_CERT_URL=firebase-client-x509-cert-url:latest,FIREBASE_UNIVERSE_DOMAIN=firebase-universe-domain:latest'
+      - '--region'
+      - 'us-central1'
 
 images:
   - 'gcr.io/mymomentumapp/momentum-server'
