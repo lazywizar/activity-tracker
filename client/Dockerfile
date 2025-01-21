@@ -13,10 +13,6 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Debug: Print environment variables during build
-RUN echo "Environment variables during build:"
-RUN printenv | grep REACT_APP
-
 # Build the static files
 RUN npm run build
 
