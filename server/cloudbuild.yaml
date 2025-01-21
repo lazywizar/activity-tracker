@@ -20,7 +20,7 @@ steps:
       - '--min-instances'
       - '1'
       - '--set-secrets'
-      - 'MONGODB_URI=mongodb-uri:latest,JWT_SECRET=jwt-secret:latest,FIREBASE_TYPE=firebase-type:latest,FIREBASE_PROJECT_ID=firebase-project-id:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_ID=firebase-client-id:latest,FIREBASE_AUTH_URI=firebase-auth-uri:latest,FIREBASE_TOKEN_URI=firebase-token-uri:latest,FIREBASE_AUTH_PROVIDER_X509_CERT_URL=firebase-auth-provider-x509-cert-url:latest,FIREBASE_CLIENT_X509_CERT_URL=firebase-client-x509-cert-url:latest,FIREBASE_UNIVERSE_DOMAIN=firebase-universe-domain:latest'
+      - 'JWT_SECRET=jwt-secret:latest,FIREBASE_TYPE=firebase-type:latest,FIREBASE_PROJECT_ID=firebase-project-id:latest,FIREBASE_CLIENT_EMAIL=firebase-client-email:latest,FIREBASE_PRIVATE_KEY=firebase-private-key:latest,FIREBASE_CLIENT_ID=firebase-client-id:latest,FIREBASE_AUTH_URI=firebase-auth-uri:latest,FIREBASE_TOKEN_URI=firebase-token-uri:latest,FIREBASE_AUTH_PROVIDER_X509_CERT_URL=firebase-auth-provider-x509-cert-url:latest,FIREBASE_CLIENT_X509_CERT_URL=firebase-client-x509-cert-url:latest,FIREBASE_UNIVERSE_DOMAIN=firebase-universe-domain:latest'
 
 images:
   - 'gcr.io/mymomentumapp/momentum-server'
