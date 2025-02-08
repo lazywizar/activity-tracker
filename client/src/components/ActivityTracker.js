@@ -232,7 +232,7 @@ function ActivityTracker() {
 
   const formatDateHeader = (date) => {
     return {
-      day: date.toLocaleDateString('en-US', { weekday: 'short' }),
+      day: date.toLocaleDateString('en-US', { weekday: 'short' }).charAt(0),
       date: date.getDate()
     };
   };
@@ -242,15 +242,19 @@ function ActivityTracker() {
     const firstDate = weekDates[0];
     const lastDate = weekDates[6];
 
+    const formatYear = (date) => {
+      return `'${date.getFullYear().toString().slice(2)}`;
+    };
+
     if (firstDate.getMonth() === lastDate.getMonth()) {
-      return firstDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+      return `${firstDate.toLocaleString('default', { month: 'short' })} ${formatYear(firstDate)}`;
     }
 
     if (firstDate.getFullYear() === lastDate.getFullYear()) {
-      return `${firstDate.toLocaleString('default', { month: 'short' })} - ${lastDate.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
+      return `${firstDate.toLocaleString('default', { month: 'short' })} - ${lastDate.toLocaleString('default', { month: 'short' })} ${formatYear(firstDate)}`;
     }
 
-    return `${firstDate.toLocaleString('default', { month: 'short', year: 'numeric' })} - ${lastDate.toLocaleString('default', { month: 'short', year: 'numeric' })}`;
+    return `${firstDate.toLocaleString('default', { month: 'short' })} ${formatYear(firstDate)} - ${lastDate.toLocaleString('default', { month: 'short' })} ${formatYear(lastDate)}`;
   };
 
   const changeWeek = (delta) => {
@@ -477,7 +481,7 @@ function ActivityTracker() {
             className="text-sm text-gray-600 hover:text-gray-800"
             onClick={logout}
           >
-            <LogOut size={16} />
+            <LogOut className="text-sm text-gray-600 hover:text-gray-800" size={16} />
           </button>
         </div>
       </div>
