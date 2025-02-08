@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { Mail, Loader2 } from 'lucide-react';
 import AuthLayout from './AuthLayout';
 import PasswordInput from './PasswordInput';
-import { auth, googleProvider } from '../../config/firebase';
-import { signInWithPopup } from 'firebase/auth';
+import { auth, googleProvider, signInWithRedirect, getRedirectResult } from '../../config/firebase';
 
 export const LoginForm = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +13,26 @@ export const LoginForm = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login, forgotPassword } = useAuth();
+
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          console.log('Google sign-in successful!', result.user);
+        }
+      } catch (error) {
+        console.error('Google sign-in error:', error);
+        if (error.code === 'auth/unauthorized-domain') {
+          setError('This domain is not authorized for Google sign-in. Please contact support.');
+        } else {
+          setError('Failed to complete Google sign-in. Please try again.');
+        }
+      }
+    };
+
+    handleRedirectResult();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -58,32 +77,16 @@ export const LoginForm = () => {
 
   const handleGoogleSignIn = async (e) => {
     e?.preventDefault();
-    setIsLoading(true);
     setError('');
     setSuccessMessage('');
 
     try {
-      console.log('Starting Google sign-in...', { auth: !!auth });
-      const result = await signInWithPopup(auth, googleProvider);
-      console.log('Google sign-in successful!', result.user);
+      console.log('Starting Google sign-in...');
+      await signInWithRedirect(auth, googleProvider);
+      // The page will redirect to Google sign-in
     } catch (error) {
-      console.error('Google sign-in error:', {
-        code: error.code,
-        message: error.message,
-        fullError: error
-      });
-      
-      if (error.code === 'auth/popup-blocked') {
-        setError('Please allow popups for this website to sign in with Google.');
-      } else if (error.code === 'auth/popup-closed-by-user') {
-        setError('Sign-in was cancelled. Please try again.');
-      } else if (error.code === 'auth/unauthorized-domain') {
-        setError('This domain is not authorized for Google sign-in. Please contact support.');
-      } else {
-        setError('Failed to sign in with Google. Please try again.');
-      }
-    } finally {
-      setIsLoading(false);
+      console.error('Google sign-in error:', error);
+      setError('Failed to start Google sign-in. Please try again.');
     }
   };
 
