@@ -257,7 +257,7 @@ input[type="number"] {
 
 .progress-text {
   font-size: 11px;
-  min-width: 42px; /* Fixed width for percentage text */
+  min-width: 10px; /* Fixed width for percentage text */
   color: #6b7280;
   margin-left: 2px;  /* Add small space after emoji */
 }
@@ -276,9 +276,9 @@ input[type="number"] {
   background: none;
   border: none;
   cursor: pointer;
-  padding-right: 6px;
-  padding-left: 10px;
-  border-radius: 4px;
+  padding-right: 2px;
+  padding-left: 2px;
+  border-radius: 2px;
   color: #6b7280;
 }
 
@@ -424,7 +424,7 @@ input[type="number"] {
   }
 
   .status-cell {
-    min-width: 40px;
+    min-width: 20px;
     padding: 0;
   }
 
@@ -434,7 +434,7 @@ input[type="number"] {
 
   .progress-text {
     font-size: 10px;
-    min-width: 25px;
+    min-width: 20px;
   }
 
   .activities-grid {
@@ -567,7 +567,7 @@ input[type="number"] {
 
   .progress-text {
     font-size: 10px;
-    min-width: 25px;
+    min-width: 20px;
   }
 }
 
@@ -686,7 +686,7 @@ input[type="number"] {
 }
 
 .activity-goal {
-  font-size: 12px;
+  font-size: 11px;
   color: #6b7280;
 }
 
@@ -795,4 +795,14 @@ input[type="number"] {
 .google-icon {
   width: 18px;
   height: 18px;
+}
+
+.goal-text {
+  display: inline;
+}
+
+@media (max-width: 640px) {
+  .goal-text {
+    display: none;
+  }
 }

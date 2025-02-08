@@ -580,7 +580,9 @@ function ActivityTracker() {
                         </div>
                       )}
                     </div>
-                    <div className="activity-goal">goal {activity.weeklyGoalHours} hr / wk</div>
+                    <div className="activity-goal">
+                      <span className="goal-text">goal </span>{activity.weeklyGoalHours} hr / wk
+                    </div>
                   </div>
 
                   {weekDates.map((date) => {
@@ -618,7 +620,7 @@ function ActivityTracker() {
 
                   <div className="status-cell">
                     {getStatusEmoji(progress, 100)}
-                    <span className={`progress-text ${progressColorClass}`}>
+                    <span className={`progress-text `}>
                       {Math.ceil(progress)}%
                     </span>
                     <button
@@ -683,7 +685,7 @@ function ActivityTracker() {
 
                       <div className="status-cell">
                         {getStatusEmoji(weekProgress, 100)}
-                        <span className={`progress-text ${weekProgressClass}`}>
+                        <span className={`progress-text`}>
                           {Math.ceil(weekProgress)}%
                         </span>
                       </div>
