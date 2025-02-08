@@ -619,11 +619,8 @@ function ActivityTracker() {
                   <div className="status-cell">
                     {getStatusEmoji(progress, 100)}
                     <span className={`progress-text ${progressColorClass}`}>
-                      {progress.toFixed(1)}%
+                      {Math.ceil(progress)}%
                     </span>
-                  </div>
-
-                  <div className="settings-cell flex space-x-2">
                     <button
                       className="settings-button"
                       onClick={() => setExpandedActivities(prev => ({
@@ -687,7 +684,7 @@ function ActivityTracker() {
                       <div className="status-cell">
                         {getStatusEmoji(weekProgress, 100)}
                         <span className={`progress-text ${weekProgressClass}`}>
-                          {weekProgress.toFixed(1)}%
+                          {Math.ceil(weekProgress)}%
                         </span>
                       </div>
 

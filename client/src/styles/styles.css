@@ -25,6 +25,35 @@ body {
   max-width: 1000px;
   margin: 0 auto;
   padding: 24px;
+  width: 100%;
+}
+
+.activities-grid {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding: 0 16px 12px 16px;
+  margin: 0 -16px;
+}
+
+.card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+
+.week-headers,
+.activity-row {
+  display: grid;
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(25px, 1fr)) minmax(45px, 1fr) minmax(40px, 1fr);
+  gap: 4px;
+  align-items: center;
+  min-width: min-content;
+  width: 100%;
 }
 
 /* Header styles */
@@ -82,6 +111,7 @@ body {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   padding: 12px;
   margin-bottom: 8px;
+  width: 100%;
 }
 
 /* Add form styles */
@@ -99,21 +129,14 @@ body {
 }
 
 /* Activities grid styles */
-.activities-grid {
-  width: 100%;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  padding-bottom: 12px;
-}
-
 .week-headers,
 .activity-row {
   display: grid;
-  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(60px, 1fr)) minmax(70px, 1fr) minmax(45px, 1fr);
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(25px, 1fr)) minmax(45px, 1fr) minmax(40px, 1fr);
   gap: 4px;
   align-items: center;
   min-width: min-content;
+  width: 100%;
 }
 
 .activity-row {
@@ -127,7 +150,7 @@ body {
   justify-content: center;
   padding: 6px 4px;
   text-align: center;
-  min-width: 60px;
+  min-width: 25px;
   height: 100%;
 }
 
@@ -147,7 +170,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: 2px;
-  min-width: 60px;
+  min-width: 25px;
   height: 32px;
   border-radius: 4px;
   transition: background-color 0.2s;
@@ -181,7 +204,7 @@ body {
 
 .minute-input {
   width: 100%;
-  max-width: 48px;
+  max-width: 25px;
   height: 24px;
   padding: 2px;
   text-align: center;
@@ -215,8 +238,9 @@ input[type="number"] {
   align-items: center;
   justify-content: flex-start;
   gap: 4px;
-  min-width: 60px;
-  padding: 0 4px;
+  min-width: 45px;
+  padding: 0;
+  margin-right: 0;
 }
 
 .status-emoji {
@@ -235,6 +259,7 @@ input[type="number"] {
   font-size: 11px;
   min-width: 42px; /* Fixed width for percentage text */
   color: #6b7280;
+  margin-left: 2px;  /* Add small space after emoji */
 }
 
 /* Settings styles */
@@ -242,15 +267,17 @@ input[type="number"] {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-width: 45px;
+  min-width: 40px;
   padding-left: 0;
+  gap: 0;  /* Add this to reduce space between buttons */
 }
 
 .settings-button {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px;
+  padding-right: 6px;
+  padding-left: 10px;
   border-radius: 4px;
   color: #6b7280;
 }
@@ -371,37 +398,64 @@ input[type="number"] {
 }
 
 /* Responsive styles */
-@media (max-width: 768px) {
+@media (max-width: 640px) {
   .container {
-    padding: 8px;
+    padding: 12px;
+    max-width: none;
+    width: 100%;
   }
 
   .activities-grid {
-    margin: 0 -8px;
-    padding: 0 8px;
+    padding: 0 12px 8px 12px;
+    margin: 0 -12px;
+    width: 100vw;
+  }
+
+  .card {
+    padding: 8px;
+    margin-bottom: 6px;
   }
 
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(100px, 1.5fr) repeat(7, minmax(50px, 1fr)) minmax(60px, 1fr) minmax(40px, 1fr);
+    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(35px, 1fr);
     gap: 2px;
+    width: 100%;
+  }
+
+  .status-cell {
+    min-width: 40px;
+    padding: 0;
+  }
+
+  .settings-cell {
+    min-width: 35px;
+  }
+
+  .progress-text {
+    font-size: 10px;
+    min-width: 25px;
+  }
+
+  .activities-grid {
+    margin: 0 -12px;
+    padding: 0 12px;
   }
 
   .day-cell {
-    min-width: 50px;
-    height: 28px;
-    padding: 2px;
+    min-width: 25px;
+    height: 26px;
   }
 
   .minute-input {
-    max-width: 40px;
-    height: 22px;
+    max-width: 25px;
+    height: 20px;
     font-size: 0.6875rem;  /* 11px equivalent */
     padding: 2px;
   }
 
   .day-header {
-    min-width: 50px;
+    min-width: 25px;
     padding: 4px 2px;
   }
 
@@ -431,11 +485,11 @@ input[type="number"] {
   }
 
   .day-cell {
-    height: 28px;
+    height: 26px;
   }
 
   .minute-input {
-    height: 22px;
+    height: 20px;
   }
 
   .settings-cell {
@@ -444,19 +498,36 @@ input[type="number"] {
 }
 
 @media (max-width: 480px) {
+  .container {
+    padding: 8px;
+    width: 100%;
+  }
+
+  .activities-grid {
+    padding: 0 8px 4px 8px;
+    margin: 0 -8px;
+    width: 100vw;
+  }
+
+  .card {
+    padding: 6px;
+    margin-bottom: 4px;
+  }
+
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(80px, 1fr) repeat(7, minmax(45px, 1fr)) minmax(55px, 1fr) minmax(35px, 1fr);
+    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(32px, 1fr);
     gap: 1px;
+    width: 100%;
   }
 
   .day-cell {
-    min-width: 45px;
+    min-width: 25px;
     height: 26px;
   }
 
   .minute-input {
-    max-width: 36px;
+    max-width: 25px;
     height: 20px;
     font-size: 0.6875rem;  /* 11px equivalent */
   }
@@ -481,6 +552,23 @@ input[type="number"] {
   .settings-button {
     padding: 4px;
   }
+
+  .status-cell {
+    margin-right: 6px;  /* Even less margin on mobile */
+  }
+
+  .status-cell {
+    min-width: 35px;
+  }
+
+  .settings-cell {
+    min-width: 32px;
+  }
+
+  .progress-text {
+    font-size: 10px;
+    min-width: 25px;
+  }
 }
 
 .activity-wrapper {
@@ -504,7 +592,7 @@ input[type="number"] {
   opacity: 0.85;
   padding: 0.25rem;
   height: 26px;
-  min-width: 50px;
+  min-width: 25px;
 }
 
 .history-row .status-cell {
