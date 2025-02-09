@@ -39,6 +39,12 @@ function ActivityTracker() {
   const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
   const updateActivity = async (activityId, updatedHistory, source = 'direct') => {
+    // Don't update if the activity is being deleted
+    if (!activities.find(a => a.id === activityId)) {
+      console.log(`🚫 [${source}] Skipping update for deleted activity ${activityId}`);
+      return;
+    }
+
     console.log(`🔄 [${source}] Attempting to save activity ${activityId}`, {
       pendingUpdates: Array.from(pendingUpdates),
       history: JSON.stringify(updatedHistory),
@@ -61,26 +67,30 @@ function ActivityTracker() {
         }
       );
 
-      console.log(`✅ [${source}] Successfully saved activity ${activityId}`, {
-        responseData: JSON.stringify(response.data),
-        attempts: saveAttemptsRef.current[activityId]
-      });
+      // Check if activity still exists before updating state
+      if (activities.find(a => a.id === activityId)) {
+        console.log(`✅ [${source}] Successfully saved activity ${activityId}`, {
+          responseData: JSON.stringify(response.data),
+          attempts: saveAttemptsRef.current[activityId]
+        });
 
-      // Update local state with the response
-      const newActivities = activities.map(a =>
-        a.id === activityId ? response.data : a
-      );
-      setActivities(newActivities);
+        // Update local state with the response
+        const newActivities = activities.map(a =>
+          a.id === activityId ? response.data : a
+        );
+        setActivities(newActivities);
 
-      // Clear pending state for this activity
-      setPendingUpdates(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(activityId);
-        return newSet;
-      });
-      delete pendingChangesRef.current[activityId];
-      delete saveAttemptsRef.current[activityId];
-
+        // Clear pending state for this activity
+        setPendingUpdates(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(activityId);
+          return newSet;
+        });
+        delete pendingChangesRef.current[activityId];
+        delete saveAttemptsRef.current[activityId];
+      } else {
+        console.log(`🚫 [${source}] Activity ${activityId} no longer exists, skipping state update`);
+      }
     } catch (error) {
       console.error(`❌ [${source}] Failed to save activity ${activityId}`, {
         error: error.message,
@@ -89,8 +99,8 @@ function ActivityTracker() {
       });
       setError('Failed to save changes. Please try again.');
 
-      // If we've tried less than 3 times, retry the save
-      if (saveAttemptsRef.current[activityId] < 3) {
+      // If we've tried less than 3 times and the activity still exists, retry the save
+      if (saveAttemptsRef.current[activityId] < 3 && activities.find(a => a.id === activityId)) {
         console.log(`🔄 Retrying save for activity ${activityId} (Attempt ${saveAttemptsRef.current[activityId]})`);
         setTimeout(() => updateActivity(activityId, updatedHistory, 'retry'), 1000);
       }
@@ -337,9 +347,25 @@ function ActivityTracker() {
   };
 
   const handleDeleteActivity = async () => {
+    if (!editingActivity) return;
+    
     try {
-      await axios.delete(`${API_BASE_URL}/activities/${editingActivity.id}`);
-      const newActivities = activities.filter(a => a.id !== editingActivity.id);
+      const activityId = editingActivity.id;
+      
+      // Clear any pending updates for this activity
+      setPendingUpdates(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(activityId);
+        return newSet;
+      });
+      delete pendingChangesRef.current[activityId];
+      delete saveAttemptsRef.current[activityId];
+      
+      // Delete the activity
+      await axios.delete(`${API_BASE_URL}/activities/${activityId}`);
+      
+      // Update local state
+      const newActivities = activities.filter(a => a.id !== activityId);
       setActivities(newActivities);
       setEditingActivity(null);
     } catch (error) {

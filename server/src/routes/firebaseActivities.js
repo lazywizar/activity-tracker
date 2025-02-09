@@ -87,12 +87,13 @@ router.delete('/:id', authenticateFirebase, async (req, res) => {
       return res.status(404).json({ message: 'Activity not found' });
     }
 
+    log('ACTIVITY', '→ Request body:', JSON.stringify(activity));
     await deleteActivity(userId, activityId);
     log('ACTIVITY', '✓ Deleted:', activityId);
-    res.json({ message: 'Activity deleted' });
+    return res.status(200).json({ message: 'Activity deleted' });
   } catch (error) {
     log('ACTIVITY', '✗ Delete error:', error.message);
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 });
 

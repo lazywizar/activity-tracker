@@ -96,12 +96,29 @@ const updateActivity = async (userId, activityId, activityData) => {
 };
 
 const deleteActivity = async (userId, activityId) => {
-  await db
-    .collection('users')
-    .doc(userId)
-    .collection('activities')
-    .doc(activityId)
-    .delete();
+  console.log('DB: Deleting activity', { userId, activityId });
+  
+  try {
+    const activityRef = db
+      .collection('users')
+      .doc(userId)
+      .collection('activities')
+      .doc(activityId);
+
+    await activityRef.delete();
+    console.log('DB: Successfully deleted activity', activityId);
+    
+    // Verify deletion
+    const doc = await activityRef.get();
+    if (!doc.exists) {
+      console.log('DB: Verified activity no longer exists');
+    } else {
+      console.error('DB: Activity still exists after deletion!');
+    }
+  } catch (error) {
+    console.error('DB: Error deleting activity:', error);
+    throw error;
+  }
 };
 
 const updateActivityHistory = async (userId, activityId, yearWeek, days) => {
