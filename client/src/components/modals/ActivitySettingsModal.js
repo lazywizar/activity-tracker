@@ -74,15 +74,22 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
             />
           </div>
           <div className="modal-actions">
+          <button
+                type="submit"
+                className="save-button"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </button>
+            <div className="modal-buttons">
             <button
-              type="button"
+              type="button-secondary"
               onClick={onDelete}
               className="delete-button"
               disabled={isSubmitting}
             >
               Delete Activity
             </button>
-            <div className="modal-buttons">
               <button
                 type="button"
                 onClick={onClose}
@@ -90,13 +97,6 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
                 disabled={isSubmitting}
               >
                 Cancel
-              </button>
-              <button
-                type="submit"
-                className="save-button"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
