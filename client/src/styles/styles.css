@@ -49,7 +49,7 @@ body {
 .week-headers,
 .activity-row {
   display: grid;
-  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(25px, 1fr)) minmax(45px, 1fr) minmax(40px, 1fr);
+  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(25px, 1fr)) minmax(45px, 1fr) minmax(30px, 0.5fr);
   gap: 4px;
   align-items: center;
   min-width: min-content;
@@ -61,8 +61,31 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-  line-height: 1; /* Add this to remove extra spacing */
+  margin-bottom: 16px;
+}
+
+.header .add-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 20px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #6b7280;
+}
+
+.header .add-button:hover {
+  background-color: #f3f4f6;
+}
+
+@media (max-width: 640px) {
+  .header {
+    margin-bottom: 12px;
+  }
+
+  .header .add-button {
+    padding: 4px 6px;
+  }
 }
 
 .title-section {
@@ -118,27 +141,61 @@ body {
 .add-form {
   display: flex;
   gap: 8px;
+  margin-bottom: 16px;
   align-items: center;
+}
+
+@media (max-width: 640px) {
+  .add-form {
+    gap: 4px;
+    margin-bottom: 12px;
+    align-items: center;
+  }
+
+  .add-form input[type="text"]:first-child {
+    width: 100px;
+  }
+
+  .add-form input.description-input {
+    width: 100px;
+  }
+
+  .add-form input[type="number"] {
+    width: 45px;
+  }
 }
 
 .input {
-  padding: 8px;
   border: 1px solid #e5e7eb;
   border-radius: 4px;
+  padding: 8px;
+  margin-bottom: 8px;
+  width: 100%;
   font-size: 14px;
 }
 
-/* Activities grid styles */
-.week-headers,
-.activity-row {
-  display: grid;
-  grid-template-columns: minmax(120px, 2fr) repeat(7, minmax(25px, 1fr)) minmax(45px, 1fr) minmax(40px, 1fr);
-  gap: 4px;
-  align-items: center;
-  min-width: min-content;
-  width: 100%;
+@media (max-width: 640px) {
+  .input {
+    padding: 4px 6px;
+    margin-bottom: 6px;
+    font-size: 12px;
+  }
+
+  input.input {
+    height: 28px;
+  }
+
+  input.input[type="number"] {
+    width: 60px;
+    padding: 4px;
+  }
+
+  input.input::placeholder {
+    font-size: 12px;
+  }
 }
 
+/* Activities grid styles */
 .activity-row {
   position: relative;
 }
@@ -235,9 +292,9 @@ input[type="number"] {
 /* Status cell styles */
 .status-cell {
   display: flex;
-  align-items: center;
   justify-content: flex-start;
-  gap: 4px;
+  align-items: center;
+  gap: 2px;
   min-width: 45px;
   padding: 0;
   margin-right: 0;
@@ -257,33 +314,88 @@ input[type="number"] {
 
 .progress-text {
   font-size: 11px;
-  min-width: 10px; /* Fixed width for percentage text */
+  min-width: 10px;
   color: #6b7280;
-  margin-left: 2px;  /* Add small space after emoji */
+  margin-left: 2px;
+  margin-right: 8px;
+  padding-right: 0;
+  width: fit-content;
+}
+
+@media (max-width: 640px) {
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(25px, 0.5fr);
+    gap: 3px;
+  }
+
+  .progress-text {
+    margin-right: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(20px, 0.5fr);
+    gap: 2px;
+  }
+
+  .progress-text {
+    margin-right: 4px;
+  }
 }
 
 /* Settings styles */
 .settings-cell {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  min-width: 40px;
-  padding-left: 0;
-  gap: 0;  /* Add this to reduce space between buttons */
+  min-width: 30px;
+  padding: 0;
+  gap: 0;
 }
 
 .settings-button {
   background: none;
   border: none;
   cursor: pointer;
-  padding-right: 2px;
-  padding-left: 2px;
-  border-radius: 2px;
+  padding: 2px;
+  border-radius: 4px;
   color: #6b7280;
 }
 
 .settings-button:hover {
   background-color: #f3f4f6;
+}
+
+@media (max-width: 640px) {
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(25px, 0.5fr);
+    gap: 2px;
+  }
+
+  .settings-cell {
+    min-width: 25px;
+    justify-content: center;
+  }
+
+  .settings-button {
+    padding: 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(20px, 0.5fr);
+    gap: 1px;
+  }
+
+  .settings-cell {
+    min-width: 20px;
+  }
 }
 
 /* Modal styles */
@@ -364,13 +476,22 @@ input[type="number"] {
 }
 
 .save-button {
-  padding: 8px 16px;
+  padding: 4px 10px;
   background-color: #3b82f6;
   color: white;
   border: none;
   border-radius: 4px;
-  font-size: 14px;
+  font-size: 12px;
   cursor: pointer;
+  height: 28px;
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+
+@media (max-width: 640px) {
+  .save-button {
+    margin-bottom: 6px;
+  }
 }
 
 /* Day header styles */
@@ -418,7 +539,7 @@ input[type="number"] {
 
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(35px, 1fr);
+    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(25px, 0.5fr);
     gap: 2px;
     width: 100%;
   }
@@ -429,7 +550,7 @@ input[type="number"] {
   }
 
   .settings-cell {
-    min-width: 35px;
+    min-width: 25px;
   }
 
   .progress-text {
@@ -493,7 +614,7 @@ input[type="number"] {
   }
 
   .settings-cell {
-    min-width: 40px;
+    min-width: 25px;
   }
 }
 
@@ -516,7 +637,7 @@ input[type="number"] {
 
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(32px, 1fr);
+    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(20px, 0.5fr);
     gap: 1px;
     width: 100%;
   }
@@ -546,7 +667,7 @@ input[type="number"] {
   }
 
   .settings-cell {
-    min-width: 35px;
+    min-width: 20px;
   }
 
   .settings-button {
@@ -562,7 +683,7 @@ input[type="number"] {
   }
 
   .settings-cell {
-    min-width: 32px;
+    min-width: 20px;
   }
 
   .progress-text {
@@ -626,17 +747,13 @@ input[type="number"] {
 }
 
 .expand-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
-  border: none;
-  border-radius: 0.25rem;
-  transition: all 0.2s;
+  display: inline-flex;
 }
 
-.expand-button:hover {
-  background-color: #ffffff;
+@media (max-width: 640px) {
+  .expand-button {
+    display: none;
+  }
 }
 
 .download-button {
@@ -804,5 +921,19 @@ input[type="number"] {
 @media (max-width: 640px) {
   .goal-text {
     display: none;
+  }
+}
+
+.description-input {
+  font-size: 14px;
+}
+
+@media (max-width: 640px) {
+  .description-input {
+    font-size: 12px;
+  }
+
+  .description-input::placeholder {
+    font-size: 12px;
   }
 }

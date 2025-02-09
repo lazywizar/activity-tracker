@@ -23,13 +23,14 @@ function ActivityTracker() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newActivityName, setNewActivityName] = useState('');
   const [newActivityDescription, setNewActivityDescription] = useState('');
-  const [newActivityGoal, setNewActivityGoal] = useState('');
+  const [newActivityWeeklyGoalHours, setNewActivityWeeklyGoalHours] = useState('');
   const [editingActivity, setEditingActivity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [expandedActivities, setExpandedActivities] = useState({});
   const [showDateRangeModal, setShowDateRangeModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 640);
   const { user, logout } = useAuth();
   const [pendingUpdates, setPendingUpdates] = useState(new Set());
   const pendingChangesRef = useRef({});
@@ -140,6 +141,15 @@ function ActivityTracker() {
       debouncedUpdate.cancel();
     };
   }, [pendingUpdates]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 640);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     fetchActivities();
@@ -270,7 +280,7 @@ function ActivityTracker() {
       return;
     }
 
-    const goalHours = parseFloat(newActivityGoal);
+    const goalHours = parseFloat(newActivityWeeklyGoalHours);
     if (isNaN(goalHours) || goalHours <= 0) {
       setError('Please enter a valid goal (greater than 0)');
       return;
@@ -300,7 +310,7 @@ function ActivityTracker() {
       const response = await axios.post(`${API_BASE_URL}/activities`, newActivity);
       setActivities([...activities, response.data]);
       setNewActivityName('');
-      setNewActivityGoal('');
+      setNewActivityWeeklyGoalHours('');
       setShowAddForm(false);
     } catch (error) {
       console.error('Error adding activity:', error);
@@ -468,7 +478,7 @@ function ActivityTracker() {
         <div className="title-section">
           <BrandText size="large" />
         </div>
-        <div className="flex items-center space-x-1">
+        <div className="flex items-center gap-3">
           <button
             className="add-button"
             onClick={() => setShowDateRangeModal(true)}
@@ -495,24 +505,26 @@ function ActivityTracker() {
       {showAddForm && (
         <div className="card add-form">
           <input
-            placeholder="Activity Name"
+            type="text"
+            placeholder={isMobile ? "name" : "Activity Name"}
             value={newActivityName}
             onChange={(e) => setNewActivityName(e.target.value)}
             className="input"
           />
-          <textarea
-            placeholder="Activity Description (optional)"
+          <input
+            type="text"
+            placeholder={isMobile ? "desc." : "Description"}
             value={newActivityDescription}
             onChange={(e) => setNewActivityDescription(e.target.value)}
-            className="input min-h-[80px] resize-y"
+            className="input description-input"
           />
           <input
             type="number"
-            placeholder="Weekly Goal (hours)"
-            value={newActivityGoal}
-            onChange={(e) => setNewActivityGoal(e.target.value)}
+            placeholder={isMobile ? "hr/wk" : "Hours per week"}
+            value={newActivityWeeklyGoalHours}
+            onChange={(e) => setNewActivityWeeklyGoalHours(e.target.value)}
             className="input"
-            min="0.5"
+            min="0"
             step="0.5"
           />
           <button
@@ -623,8 +635,10 @@ function ActivityTracker() {
                     <span className={`progress-text `}>
                       {Math.ceil(progress)}%
                     </span>
-                    <button
-                      className="settings-button"
+                  </div>
+                  <div className="settings-cell">
+                  <button
+                      className="settings-button expand-button"
                       onClick={() => setExpandedActivities(prev => ({
                         ...prev,
                         [activity.id]: !prev[activity.id]
