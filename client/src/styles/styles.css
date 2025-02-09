@@ -3,7 +3,6 @@
 @tailwind utilities;
 
 /* Base styles */
-
 * {
   margin: 0;
   padding: 0;
@@ -37,6 +36,7 @@ body {
   margin: 0 -16px;
 }
 
+/* Consolidated card styles (removed duplicate definition) */
 .card {
   background: white;
   border-radius: 8px;
@@ -46,6 +46,7 @@ body {
   width: 100%;
 }
 
+/* Default grid for week headers and activity rows */
 .week-headers,
 .activity-row {
   display: grid;
@@ -82,7 +83,6 @@ body {
   .header {
     margin-bottom: 12px;
   }
-
   .header .add-button {
     padding: 4px 6px;
   }
@@ -91,7 +91,7 @@ body {
 .title-section {
   display: flex;
   align-items: center;
-  line-height: 1; /* Add this to remove extra spacing */
+  line-height: 1;
 }
 
 .title {
@@ -114,7 +114,8 @@ body {
 }
 
 /* Button styles */
-.nav-button, .add-button {
+.nav-button,
+.add-button {
   background: none;
   border: none;
   cursor: pointer;
@@ -123,18 +124,9 @@ body {
   color: #6b7280;
 }
 
-.nav-button:hover, .add-button:hover {
+.nav-button:hover,
+.add-button:hover {
   background-color: #f3f4f6;
-}
-
-/* Card styles */
-.card {
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  padding: 12px;
-  margin-bottom: 8px;
-  width: 100%;
 }
 
 /* Add form styles */
@@ -151,15 +143,10 @@ body {
     margin-bottom: 12px;
     align-items: center;
   }
-
-  .add-form input[type="text"]:first-child {
-    width: 100px;
-  }
-
+  .add-form input[type="text"]:first-child,
   .add-form input.description-input {
     width: 100px;
   }
-
   .add-form input[type="number"] {
     width: 45px;
   }
@@ -180,22 +167,19 @@ body {
     margin-bottom: 6px;
     font-size: 12px;
   }
-
   input.input {
     height: 28px;
   }
-
   input.input[type="number"] {
     width: 60px;
     padding: 4px;
   }
-
   input.input::placeholder {
     font-size: 12px;
   }
 }
 
-/* Activities grid styles */
+/* Activities grid specific styles */
 .activity-row {
   position: relative;
 }
@@ -231,7 +215,7 @@ body {
   height: 32px;
   border-radius: 4px;
   transition: background-color 0.2s;
-  background-color: #f3f4f6;  /* Default gray background */
+  background-color: #f3f4f6;
 }
 
 .day-cell:hover {
@@ -251,13 +235,17 @@ body {
   color: #6b7280;
 }
 
-.day-cell.past.good { background: rgba(34, 197, 94, 0.15); }
-.day-cell.past.medium { background: rgba(234, 179, 8, 0.15); }
-.day-cell.past.poor { background: rgba(239, 68, 68, 0.15); }
+.day-cell.good {
+  background: rgba(34, 197, 94, 0.25);
+}
 
-.day-cell.good { background: rgba(34, 197, 94, 0.25); }
-.day-cell.medium { background: rgba(234, 179, 8, 0.25); }
-.day-cell.poor { background: rgba(239, 68, 68, 0.25); }
+.day-cell.medium {
+  background: rgba(234, 179, 8, 0.25);
+}
+
+.day-cell.poor {
+  background: rgba(239, 68, 68, 0.25);
+}
 
 .minute-input {
   width: 100%;
@@ -267,7 +255,7 @@ body {
   text-align: center;
   border: none;
   border-radius: 4px;
-  font-size: 0.8125rem;  /* 13px equivalent */
+  font-size: 0.8125rem;
   background: transparent;
   color: #1f2937;
   transition: all 0.2s;
@@ -278,7 +266,6 @@ body {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Hide number input spinners */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
@@ -289,23 +276,29 @@ input[type="number"] {
   -moz-appearance: textfield;
 }
 
-/* Status cell styles */
+/* Status and settings */
 .status-cell {
   display: flex;
   justify-content: flex-start;
   align-items: center;
-  gap: 6px;
-  min-width: 45px;
-  padding: 0 4px;
-  margin-right: 0;
+  gap: 4px;
+  min-width: 60px;
+  padding: 0;
 }
 
 .status-emoji {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px; /* Fixed width container for emoji */
-  flex-shrink: 0; /* Prevent emoji from shrinking */
+  width: 20px;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+}
+
+@media screen and (max-width: 768px) {
+  .status-emoji {
+    font-size: 1rem;
+  }
 }
 
 .emoji {
@@ -313,65 +306,22 @@ input[type="number"] {
 }
 
 .progress-text {
-  font-size: 11px;
-  min-width: 10px;
+  font-size: 10px;
+  min-width: 20px;
   color: #6b7280;
-  margin-left: 4px;
-  margin-right: 12px;
+  margin-left: 2px;
+  margin-right: 4px;
   padding-right: 0;
   width: fit-content;
 }
 
-@media (max-width: 640px) {
-  .status-cell {
-    gap: 2px;
-    padding: 0;
-  }
-
-  .progress-text {
-    margin-left: 2px;
-    margin-right: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .progress-text {
-    margin-right: 4px;
-  }
-}
-
-@media (max-width: 640px) {
-  .week-headers,
-  .activity-row {
-    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(25px, 0.5fr);
-    gap: 3px;
-  }
-
-  .progress-text {
-    margin-right: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .week-headers,
-  .activity-row {
-    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(20px, 0.5fr);
-    gap: 2px;
-  }
-
-  .progress-text {
-    margin-right: 4px;
-  }
-}
-
-/* Settings styles */
 .settings-cell {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: center;
-  min-width: 30px;
+  gap: 8px;
+  min-width: 60px;
   padding: 0;
-  gap: 0;
 }
 
 .settings-button {
@@ -388,35 +338,186 @@ input[type="number"] {
 }
 
 @media (max-width: 640px) {
+  .settings-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 25px;
+    padding: 0;
+  }
+  .settings-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    color: #6b7280;
+  }
+  .settings-button:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+@media screen and (max-width: 768px) {
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(25px, 0.5fr);
+    grid-template-columns: minmax(80px, 2fr) repeat(7, minmax(20px, 0.7fr)) 45px 30px;
     gap: 2px;
   }
 
-  .settings-cell {
-    min-width: 25px;
-    justify-content: center;
+  .day-cell {
+    min-width: 20px;
+    height: 28px;
+    padding: 1px;
   }
 
-  .settings-button {
-    padding: 2px;
+  .status-cell {
+    width: 45px;
+    min-width: 45px;
+    max-width: 45px;
+    padding: 0;
+    gap: 1px;
+    overflow: hidden;
+  }
+
+  .settings-cell {
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .progress-text {
+    font-size: 9px;
+    min-width: 14px;
+    margin: 0 1px;
+  }
+
+  .status-emoji {
+    width: 16px;
+    min-width: 16px;
   }
 }
 
-@media (max-width: 480px) {
+/* --------------------- */
+/* Mobile Overrides: max-width 640px */
+/* --------------------- */
+@media (max-width: 640px) {
+  .container {
+    padding: 12px;
+    max-width: none;
+    width: 100%;
+  }
+  .activities-grid {
+    margin: 0 -12px;
+    padding: 0 12px;
+    width: 100vw;
+  }
+  .card {
+    padding: 8px;
+    margin-bottom: 6px;
+  }
   .week-headers,
   .activity-row {
-    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(20px, 0.5fr);
-    gap: 1px;
+    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(18px, 1fr)) minmax(40px, 1fr) minmax(18px, 0.5fr);
+    gap: 2px;
+    width: 100%;
   }
+  .status-cell {
+    min-width: 60px;
+    padding: 0;
+    gap: 4px;
+  }
+  .progress-text {
+    font-size: 10px;
+    min-width: 20px;
+    margin-left: 1px;
+    margin-right: 2px;
+  }
+  .day-cell {
+    min-width: 18px;
+    height: 26px;
+  }
+  .minute-input {
+    max-width: 25px;
+    height: 20px;
+    font-size: 0.6875rem;
+    padding: 2px;
+  }
+  .day-header {
+    min-width: 20px;
+    padding: 4px 2px;
+  }
+  .day-header div:first-child {
+    font-size: 11px;
+  }
+  .day-header div:last-child {
+    font-size: 10px;
+  }
+  .activity-name {
+    font-size: 12px;
+  }
+  .activity-goal {
+    font-size: 10px;
+  }
+}
 
+/* --------------------- */
+/* Extra Small Overrides: max-width 480px */
+/* --------------------- */
+@media (max-width: 480px) {
+  .container {
+    padding: 8px;
+    width: 100%;
+  }
+  .activities-grid {
+    padding: 0 8px 4px 8px;
+    margin: 0 -8px;
+    width: 100vw;
+  }
+  .card {
+    padding: 6px;
+    margin-bottom: 4px;
+  }
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(18px, 1fr)) minmax(35px, 1fr) minmax(18px, 0.5fr);
+    gap: 1px;
+    width: 100%;
+  }
   .settings-cell {
     min-width: 20px;
   }
+  .settings-button {
+    padding: 4px;
+  }
+  .status-cell {
+    margin-right: 6px;
+    min-width: 35px;
+    gap: 4px;
+  }
+  .progress-text {
+    font-size: 10px;
+    min-width: 20px;
+    margin-left: 2px;
+    margin-right: 4px;
+  }
+  .day-cell {
+    min-width: 18px;
+    height: 26px;
+  }
+  .minute-input {
+    max-width: 25px;
+    height: 20px;
+    font-size: 0.6875rem;
+  }
 }
 
-/* Modal styles */
+/* The remainder (modals, tooltips, auth etc.) remains unchanged below */
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -510,7 +611,6 @@ input[type="number"] {
   }
 }
 
-/* Day header styles */
 .day-header {
   display: flex;
   flex-direction: column;
@@ -534,180 +634,6 @@ input[type="number"] {
   color: #9ca3af;
 }
 
-/* Responsive styles */
-@media (max-width: 640px) {
-  .container {
-    padding: 12px;
-    max-width: none;
-    width: 100%;
-  }
-
-  .activities-grid {
-    padding: 0 12px 8px 12px;
-    margin: 0 -12px;
-    width: 100vw;
-  }
-
-  .card {
-    padding: 8px;
-    margin-bottom: 6px;
-  }
-
-  .week-headers,
-  .activity-row {
-    grid-template-columns: minmax(80px, 1.5fr) repeat(7, minmax(25px, 1fr)) minmax(40px, 1fr) minmax(25px, 0.5fr);
-    gap: 2px;
-    width: 100%;
-  }
-
-  .status-cell {
-    min-width: 20px;
-    padding: 0;
-  }
-
-  .settings-cell {
-    min-width: 25px;
-  }
-
-  .progress-text {
-    font-size: 10px;
-    min-width: 20px;
-  }
-
-  .activities-grid {
-    margin: 0 -12px;
-    padding: 0 12px;
-  }
-
-  .day-cell {
-    min-width: 25px;
-    height: 26px;
-  }
-
-  .minute-input {
-    max-width: 25px;
-    height: 20px;
-    font-size: 0.6875rem;  /* 11px equivalent */
-    padding: 2px;
-  }
-
-  .day-header {
-    min-width: 25px;
-    padding: 4px 2px;
-  }
-
-  .day-header div:first-child {
-    font-size: 11px;
-  }
-
-  .day-header div:last-child {
-    font-size: 10px;
-  }
-
-  .activity-name {
-    font-size: 12px;
-  }
-
-  .activity-goal {
-    font-size: 10px;
-  }
-
-  .status-cell {
-    min-width: 60px;
-  }
-
-  .card {
-    padding: 8px;
-    margin-bottom: 6px;
-  }
-
-  .day-cell {
-    height: 26px;
-  }
-
-  .minute-input {
-    height: 20px;
-  }
-
-  .settings-cell {
-    min-width: 25px;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 8px;
-    width: 100%;
-  }
-
-  .activities-grid {
-    padding: 0 8px 4px 8px;
-    margin: 0 -8px;
-    width: 100vw;
-  }
-
-  .card {
-    padding: 6px;
-    margin-bottom: 4px;
-  }
-
-  .week-headers,
-  .activity-row {
-    grid-template-columns: minmax(70px, 1fr) repeat(7, minmax(25px, 1fr)) minmax(35px, 1fr) minmax(20px, 0.5fr);
-    gap: 1px;
-    width: 100%;
-  }
-
-  .day-cell {
-    min-width: 25px;
-    height: 26px;
-  }
-
-  .minute-input {
-    max-width: 25px;
-    height: 20px;
-    font-size: 0.6875rem;  /* 11px equivalent */
-  }
-
-  .card {
-    padding: 6px;
-    margin-bottom: 4px;
-  }
-
-  .day-cell {
-    height: 26px;
-  }
-
-  .minute-input {
-    height: 20px;
-  }
-
-  .settings-cell {
-    min-width: 20px;
-  }
-
-  .settings-button {
-    padding: 4px;
-  }
-
-  .status-cell {
-    margin-right: 6px;  /* Even less margin on mobile */
-  }
-
-  .status-cell {
-    min-width: 35px;
-  }
-
-  .settings-cell {
-    min-width: 20px;
-  }
-
-  .progress-text {
-    font-size: 10px;
-    min-width: 20px;
-  }
-}
-
 .activity-wrapper {
   margin-bottom: 0.5rem;
 }
@@ -716,6 +642,8 @@ input[type="number"] {
   opacity: 0.75;
   padding: 0.25rem 0.5rem;
   gap: 2px;
+  border-top: none;
+  background-color: #fafafa;
 }
 
 .history-row .minute-input {
@@ -740,11 +668,6 @@ input[type="number"] {
 
 .history-row .activity-info {
   padding: 0.25rem;
-}
-
-.history-row {
-  border-top: none;
-  background-color: #fafafa;
 }
 
 .past-weeks {
@@ -790,12 +713,6 @@ input[type="number"] {
   color: #374151;
 }
 
-/* Update existing modal styles if needed */
-.modal-content {
-  max-height: 90vh;
-  overflow-y: auto;
-}
-
 .auth-button {
   background: linear-gradient(135deg, #9333ea 0%, #7c3aed 100%);
 }
@@ -804,11 +721,10 @@ input[type="number"] {
   background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
 }
 
-/* Add to your styles.css */
 .activity-info {
   display: flex;
   flex-direction: column;
-  gap: 0px;
+  gap: 0;
   line-height: 1.2;
 }
 
@@ -851,7 +767,6 @@ input[type="number"] {
   opacity: 0.8;
 }
 
-/* Add a small arrow to the tooltip */
 .activity-tooltip::before {
   content: '';
   position: absolute;
@@ -862,7 +777,6 @@ input[type="number"] {
   border-color: transparent transparent #1f2937 transparent;
 }
 
-/* Google Sign-In Button */
 .auth-divider {
   text-align: center;
   margin: 20px 0;
@@ -948,8 +862,42 @@ input[type="number"] {
   .description-input {
     font-size: 12px;
   }
-
   .description-input::placeholder {
     font-size: 12px;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .week-headers,
+  .activity-row {
+    grid-template-columns: minmax(80px, 2fr) repeat(7, minmax(20px, 0.7fr)) minmax(35px, 0.8fr) minmax(25px, 0.4fr);
+    gap: 2px;
+  }
+
+  .day-cell {
+    min-width: 20px;
+    height: 28px;
+    padding: 1px;
+  }
+
+  .status-cell {
+    min-width: 35px;
+    padding-right: 2px;
+    gap: 2px;
+  }
+
+  .settings-cell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-width: 28px;
+    padding: 0;
+  }
+
+  .progress-text {
+    font-size: 9px;
+    min-width: 16px;
+    margin-left: 1px;
+    margin-right: 1px;
   }
 }

@@ -458,6 +458,41 @@ function ActivityTracker() {
     return '';
   };
 
+  // NEW: Extracted DayCell component to render a day cell.
+  const DayCell = ({
+    date,
+    minutes,
+    weeklyGoalHours,
+    isToday,
+    isPast,
+    onChange,
+    showTodayIndicator
+  }) => {
+    return (
+      <div
+        className={`day-cell ${showTodayIndicator ? 'relative' : ''} ${getProgressColor(
+          minutes,
+          weeklyGoalHours
+        )} ${isToday && showTodayIndicator ? 'today' : ''} ${isPast ? 'past' : ''}`}
+      >
+        <input
+          type="number"
+          value={minutes || ''}
+          onChange={(e) => onChange(e.target.value)}
+          className="minute-input"
+          placeholder=""
+          min="0"
+          max="999"
+        />
+        {isToday && showTodayIndicator && (
+          <span className="absolute right-[2px] bottom-[1px] text-[0.5rem] opacity-50 text-gray-500 pointer-events-none select-none">
+            min
+          </span>
+        )}
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="container">
@@ -486,7 +521,9 @@ function ActivityTracker() {
           >
             <Download size={16} />
           </button>
-          <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>+</button>
+          <button className="add-button" onClick={() => setShowAddForm(!showAddForm)}>
+            +
+          </button>
           <button
             className="text-sm text-gray-600 hover:text-gray-800"
             onClick={logout}
@@ -527,11 +564,7 @@ function ActivityTracker() {
             min="0"
             step="0.5"
           />
-          <button
-            onClick={addActivity}
-            className="save-button"
-            disabled={isSubmitting}
-          >
+          <button onClick={addActivity} className="save-button" disabled={isSubmitting}>
             {isSubmitting ? 'Adding...' : 'Add'}
           </button>
         </div>
@@ -597,6 +630,7 @@ function ActivityTracker() {
                     </div>
                   </div>
 
+                  {/* --- Current week day cells using DayCell component --- */}
                   {weekDates.map((date) => {
                     const monthKey = formatMonthKey(date);
                     const dayIndex = getDayIndex(date);
@@ -605,28 +639,16 @@ function ActivityTracker() {
                     const isPast = isPastDay(new Date(date));
 
                     return (
-                      <div
+                      <DayCell
                         key={date.toISOString()}
-                        className={`day-cell relative
-                          ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                          ${isToday ? 'today' : ''}
-                          ${isPast ? 'past' : ''}`}
-                      >
-                        <input
-                          type="number"
-                          value={minutes || ''}
-                          onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                          className="minute-input"
-                          placeholder=""
-                          min="0"
-                          max="999"
-                        />
-                        {isToday && (
-                          <span className="absolute right-[2px] bottom-[1px] text-[0.5rem] opacity-50 text-gray-500 pointer-events-none select-none">
-                            min
-                          </span>
-                        )}
-                      </div>
+                        date={date}
+                        minutes={minutes}
+                        weeklyGoalHours={activity.weeklyGoalHours}
+                        isToday={isToday}
+                        isPast={isPast}
+                        onChange={(newVal) => handleMinutesChange(activityIndex, date, newVal)}
+                        showTodayIndicator={true}
+                      />
                     );
                   })}
 
@@ -655,7 +677,7 @@ function ActivityTracker() {
                   </div>
                 </div>
 
-                {/* Past weeks rows */}
+                {/* --- Past weeks rows using DayCell component --- */}
                 {expandedActivities[activity.id] && [1, 2, 3].map(weeksAgo => {
                     const pastWeekDates = getPastWeekDates(weeksAgo);
                     const weekProgress = calculateProgress(activity, pastWeekDates); // Now passing the correct dates
@@ -678,22 +700,16 @@ function ActivityTracker() {
                         const isPast = isPastDay(new Date(date));
 
                         return (
-                          <div
+                          <DayCell
                             key={date.toISOString()}
-                            className={`day-cell
-                              ${getProgressColor(minutes, activity.weeklyGoalHours)}
-                              ${isPast ? 'past' : ''}`}
-                          >
-                            <input
-                              type="number"
-                              value={minutes || ''}
-                              onChange={(e) => handleMinutesChange(activityIndex, date, e.target.value)}
-                              className="minute-input"
-                              placeholder=""
-                              min="0"
-                              max="999"
-                            />
-                          </div>
+                            date={date}
+                            minutes={minutes}
+                            weeklyGoalHours={activity.weeklyGoalHours}
+                            isToday={false}
+                            isPast={isPast}
+                            onChange={(newVal) => handleMinutesChange(activityIndex, date, newVal)}
+                            showTodayIndicator={false}
+                          />
                         );
                       })}
 
