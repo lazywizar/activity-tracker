@@ -107,13 +107,131 @@ function ActivityTracker() {
     }
   };
 
-  // Create a debounced version with shorter timeout
+  // Create a debounced version with longer timeout
   const debouncedUpdate = useCallback(
     debounce((activityId, updatedHistory) => {
       updateActivity(activityId, updatedHistory, 'debounced');
-    }, 100), // Increased slightly to 100ms for better grouping of rapid changes
+    }, 1500), // Increased to 1.5 seconds to ensure enough typing time
     []
   );
+
+  const handleMinutesChange = (activityIndex, date, minutes) => {
+    try {
+      const activity = activities[activityIndex];
+      const monthKey = formatMonthKey(date);
+      const dayIndex = getDayIndex(date);
+
+      // Update local state immediately for responsive UI
+      const updatedActivities = [...activities];
+      const updatedActivity = { ...activity };
+
+      if (!updatedActivity.history[monthKey]) {
+        updatedActivity.history[monthKey] = {
+          days: Array(getDaysInMonth(date)).fill(0)
+        };
+      }
+
+      // Handle empty string or null specifically
+      if (minutes === '') {
+        updatedActivity.history[monthKey].days[dayIndex] = 0;
+      } else {
+        const parsedMinutes = parseInt(minutes);
+        if (isNaN(parsedMinutes) || parsedMinutes < 0) {
+          console.log('❌ Invalid minutes value:', minutes);
+          return;
+        }
+        updatedActivity.history[monthKey].days[dayIndex] = parsedMinutes;
+      }
+
+      updatedActivities[activityIndex] = updatedActivity;
+      setActivities(updatedActivities);
+
+      // Only trigger save if the value is a complete number and not empty
+      if (minutes !== '') {
+        // Track pending update
+        setPendingUpdates(prev => new Set(prev).add(activity.id));
+        pendingChangesRef.current[activity.id] = updatedActivity.history;
+
+        // Trigger debounced update
+        debouncedUpdate(activity.id, updatedActivity.history);
+      }
+
+    } catch (error) {
+      console.error('❌ Error in handleMinutesChange:', error);
+      setError('Failed to update minutes. Please try again.');
+    }
+  };
+
+  // NEW: Extracted DayCell component to render a day cell.
+  const DayCell = ({
+    date,
+    minutes,
+    weeklyGoalHours,
+    isToday,
+    isPast,
+    onChange,
+    showTodayIndicator
+  }) => {
+    // Keep local state for the input value, show empty string if minutes is 0
+    const [inputValue, setInputValue] = useState(minutes === 0 ? '' : minutes.toString());
+    const [isTyping, setIsTyping] = useState(false);
+    
+    // Update local value when minutes prop changes and we're not typing
+    useEffect(() => {
+      if (!isTyping) {
+        setInputValue(minutes === 0 ? '' : minutes.toString());
+      }
+    }, [minutes]);
+
+    const handleInputChange = (e) => {
+      const val = e.target.value;
+      // Only allow numbers and empty string, max 3 digits
+      if (val === '' || /^\d{0,3}$/.test(val)) {
+        setInputValue(val);
+        setIsTyping(true);
+      }
+    };
+
+    const handleBlur = () => {
+      setIsTyping(false);
+      // Only trigger onChange if the value has actually changed
+      if (inputValue !== (minutes === 0 ? '' : minutes.toString())) {
+        onChange(inputValue);
+      }
+    };
+
+    const handleKeyDown = (e) => {
+      if (e.key === 'Enter') {
+        e.target.blur();
+      }
+    };
+
+    return (
+      <div
+        className={`day-cell ${showTodayIndicator ? 'relative' : ''} ${getProgressColor(
+          minutes,
+          weeklyGoalHours
+        )} ${isToday && showTodayIndicator ? 'today' : ''} ${isPast ? 'past' : ''}`}
+      >
+        <input
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]*"
+          value={inputValue}
+          onChange={handleInputChange}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
+          className="minute-input"
+          placeholder=""
+        />
+        {isToday && showTodayIndicator && (
+          <span className="absolute right-[2px] bottom-[1px] text-[0.5rem] opacity-50 text-gray-500 pointer-events-none select-none">
+            min
+          </span>
+        )}
+      </div>
+    );
+  };
 
   // Save pending changes before unload
   useEffect(() => {
@@ -306,7 +424,7 @@ function ActivityTracker() {
         const monthKey = formatMonthKey(date);
         if (!history[monthKey]) {
           history[monthKey] = {
-            days: Array(new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate()).fill(0)
+            days: Array(getDaysInMonth(date)).fill(0)
           };
         }
       });
@@ -373,63 +491,6 @@ function ActivityTracker() {
     }
   };
 
-  const handleMinutesChange = (activityIndex, date, minutes) => {
-    try {
-      const activity = activities[activityIndex];
-      const monthKey = formatMonthKey(date);
-      const dayIndex = getDayIndex(date);
-
-      console.log('📝 Handling minutes change', {
-        activityId: activity.id,
-        monthKey,
-        dayIndex,
-        minutes,
-        previousValue: activity.history[monthKey]?.days[dayIndex],
-        activity: JSON.stringify(activity)
-      });
-
-      // Handle empty string or null specifically
-      const parsedMinutes = minutes === '' ? 0 : parseInt(minutes);
-      // Only validate if it's not empty
-      if (minutes !== '' && (isNaN(parsedMinutes) || parsedMinutes < 0)) {
-        console.log('❌ Invalid minutes value:', minutes);
-        return;
-      }
-
-      // Update local state immediately for responsive UI
-      const updatedActivities = [...activities];
-      const updatedActivity = { ...activity };
-
-      if (!updatedActivity.history[monthKey]) {
-        updatedActivity.history[monthKey] = {
-          days: Array(getDaysInMonth(date)).fill(0)
-        };
-      }
-
-      updatedActivity.history[monthKey].days[dayIndex] = parsedMinutes;
-      updatedActivities[activityIndex] = updatedActivity;
-      setActivities(updatedActivities);
-
-      // Track pending update
-      setPendingUpdates(prev => new Set(prev).add(activity.id));
-      pendingChangesRef.current[activity.id] = updatedActivity.history;
-
-      console.log('🔄 Queuing update', {
-        activityId: activity.id,
-        pendingUpdates: Array.from(pendingUpdates),
-        newValue: parsedMinutes,
-        history: JSON.stringify(updatedActivity.history)
-      });
-
-      // Trigger debounced update
-      debouncedUpdate(activity.id, updatedActivity.history);
-
-    } catch (error) {
-      console.error('❌ Error in handleMinutesChange:', error);
-      setError('Failed to update minutes. Please try again.');
-    }
-  };
-
   // Add periodic check for stuck updates
   useEffect(() => {
     const checkStuckUpdates = () => {
@@ -484,41 +545,6 @@ function ActivityTracker() {
     return '';
   };
 
-  // NEW: Extracted DayCell component to render a day cell.
-  const DayCell = ({
-    date,
-    minutes,
-    weeklyGoalHours,
-    isToday,
-    isPast,
-    onChange,
-    showTodayIndicator
-  }) => {
-    return (
-      <div
-        className={`day-cell ${showTodayIndicator ? 'relative' : ''} ${getProgressColor(
-          minutes,
-          weeklyGoalHours
-        )} ${isToday && showTodayIndicator ? 'today' : ''} ${isPast ? 'past' : ''}`}
-      >
-        <input
-          type="number"
-          value={minutes || ''}
-          onChange={(e) => onChange(e.target.value)}
-          className="minute-input"
-          placeholder=""
-          min="0"
-          max="999"
-        />
-        {isToday && showTodayIndicator && (
-          <span className="absolute right-[2px] bottom-[1px] text-[0.5rem] opacity-50 text-gray-500 pointer-events-none select-none">
-            min
-          </span>
-        )}
-      </div>
-    );
-  };
-
   if (loading) {
     return (
       <div className="container">
@@ -566,34 +592,49 @@ function ActivityTracker() {
       )}
 
       {showAddForm && (
-        <div className="card add-form">
-          <input
-            type="text"
-            placeholder={isMobile ? "name" : "Activity Name"}
-            value={newActivityName}
-            onChange={(e) => setNewActivityName(e.target.value)}
-            className="input"
-          />
-          <input
-            type="text"
-            placeholder={isMobile ? "desc." : "Description"}
-            value={newActivityDescription}
-            onChange={(e) => setNewActivityDescription(e.target.value)}
-            className="input description-input"
-          />
-          <input
-            type="number"
-            placeholder={isMobile ? "hr/wk" : "Hours per week"}
-            value={newActivityWeeklyGoalHours}
-            onChange={(e) => setNewActivityWeeklyGoalHours(e.target.value)}
-            className="input"
-            min="0"
-            step="0.5"
-          />
-          <button onClick={addActivity} className="save-button" disabled={isSubmitting}>
-            {isSubmitting ? 'Adding...' : 'Add'}
-          </button>
-        </div>
+        <>
+          <div className="card mb-2">
+            <div className="w-full text-center">
+              <h2 className="text-xl font-medium bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
+                Add New Activity
+              </h2>
+            </div>
+          </div>
+          <div className="card add-form">
+            <div className="flex space-x-3 w-full">
+              <input
+                type="text"
+                placeholder={isMobile ? "name" : "Activity Name"}
+                value={newActivityName}
+                onChange={(e) => setNewActivityName(e.target.value)}
+                className="block w-[40%] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+              <input
+                type="text"
+                placeholder={isMobile ? "desc." : "Description"}
+                value={newActivityDescription}
+                onChange={(e) => setNewActivityDescription(e.target.value)}
+                className="block w-[35%] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              />
+              <input
+                type="number"
+                placeholder={isMobile ? "hr/wk" : "Hours per week"}
+                value={newActivityWeeklyGoalHours}
+                onChange={(e) => setNewActivityWeeklyGoalHours(e.target.value)}
+                className="block w-[15%] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                min="0"
+                step="0.5"
+              />
+              <button
+                onClick={addActivity}
+                disabled={isSubmitting}
+                className="block w-[10%] py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-center text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? '...' : 'Add'}
+              </button>
+            </div>
+          </div>
+        </>
       )}
 
       {!loading && activities.length === 0 && !showAddForm && (

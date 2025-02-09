@@ -34,71 +34,86 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
   return (
     <div className="modal-overlay">
       <div className="modal-content card">
-        <h2 className="modal-title">Edit Activity</h2>
+        <div className="relative mb-6">
+          <div className="flex flex-col items-center">
+            <h2 className="text-2xl font-medium bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-transparent bg-clip-text">
+              Edit Activity
+            </h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="absolute right-0 top-0 text-gray-400 hover:text-gray-500 focus:outline-none"
+          >
+            <span className="sr-only">Close</span>
+            ×
+          </button>
+        </div>
+        
         {error && (
-          <div className="error-message mb-4 text-red-600 text-sm">{error}</div>
+          <div className="mb-4 p-2 text-sm text-red-700 bg-red-100 rounded-md">
+            {error}
+          </div>
         )}
-        <form onSubmit={handleSubmit} className="modal-form">
-          <div className="form-group">
-            <label htmlFor="name">Activity Name</label>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+              Activity Name
+            </label>
             <input
               id="name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="input"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="description">Description</label>
+
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+              Description
+            </label>
             <textarea
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="input min-h-[80px] resize-y"
-              placeholder="Add a description for this activity..."
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="goal">Weekly Goal (hours)</label>
+
+          <div>
+            <label htmlFor="weeklyGoalHours" className="block text-sm font-medium text-gray-700">
+              Weekly Goal (hours)
+            </label>
             <input
-              id="goal"
+              id="weeklyGoalHours"
               type="number"
               min="0.5"
               step="0.5"
               value={weeklyGoalHours}
               onChange={(e) => setWeeklyGoalHours(e.target.value)}
-              className="input"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
               required
             />
           </div>
-          <div className="modal-actions">
-          <button
-                type="submit"
-                className="save-button"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Saving...' : 'Save Changes'}
-              </button>
-            <div className="modal-buttons">
+
+          <div className="flex items-center justify-between mt-6">
             <button
-              type="button-secondary"
+              type="button"
               onClick={onDelete}
-              className="delete-button"
+              className="px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 border border-red-600 hover:border-red-700 rounded focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={isSubmitting}
             >
-              Delete Activity
+              Delete
             </button>
-              <button
-                type="button"
-                onClick={onClose}
-                className="cancel-button"
-                disabled={isSubmitting}
-              >
-                Cancel
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="w-2/3 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
         </form>
       </div>

@@ -73,18 +73,28 @@ const updateActivity = async (userId, activityId, activityData) => {
 
     // Get current activity data
     const currentActivity = await activityRef.get();
-    console.log('DB: Current activity data:', currentActivity.data());
+    const currentData = currentActivity.data() || {};
+    console.log('DB: Current activity data:', currentData);
 
-    // Merge the updates with existing data
-    const updates = {
-      ...currentActivity.data(),
-      ...activityData,
-      updatedAt: new Date()
-    };
+    // If history is being updated, handle it carefully
+    let updates = { ...activityData };
+    if (activityData.history) {
+      // For history updates, merge at the month level
+      const mergedHistory = { ...currentData.history };
+      Object.entries(activityData.history).forEach(([monthKey, monthData]) => {
+        mergedHistory[monthKey] = {
+          days: monthData.days
+        };
+      });
+      updates.history = mergedHistory;
+    }
+
+    // Add updatedAt timestamp
+    updates.updatedAt = new Date();
 
     console.log('DB: Merged updates:', updates);
 
-    // Update the activity
+    // Update the activity with merge: true to preserve other fields
     await activityRef.set(updates, { merge: true });
     console.log('DB: Update successful');
 
