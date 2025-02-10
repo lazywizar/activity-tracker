@@ -172,9 +172,10 @@ function ActivityTracker() {
     onChange,
     showTodayIndicator
   }) => {
-    // Keep local state for the input value, show empty string if minutes is 0
+    // Keep local state for the input value
     const [inputValue, setInputValue] = useState(minutes === 0 ? '' : minutes.toString());
     const [isTyping, setIsTyping] = useState(false);
+    const saveTimeoutRef = useRef(null);
     
     // Update local value when minutes prop changes and we're not typing
     useEffect(() => {
@@ -183,18 +184,44 @@ function ActivityTracker() {
       }
     }, [minutes]);
 
+    // Cleanup timeout on unmount
+    useEffect(() => {
+      return () => {
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+      };
+    }, []);
+
     const handleInputChange = (e) => {
       const val = e.target.value;
       // Only allow numbers and empty string, max 3 digits
       if (val === '' || /^\d{0,3}$/.test(val)) {
         setInputValue(val);
         setIsTyping(true);
+
+        // Clear any existing timeout
+        if (saveTimeoutRef.current) {
+          clearTimeout(saveTimeoutRef.current);
+        }
+
+        // Set new timeout to save after 1 second of no typing
+        saveTimeoutRef.current = setTimeout(() => {
+          if (val !== (minutes === 0 ? '' : minutes.toString())) {
+            setIsTyping(false);
+            onChange(val);
+          }
+        }, 1000);
       }
     };
 
     const handleBlur = () => {
+      // Clear any pending timeout
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
       setIsTyping(false);
-      // Only trigger onChange if the value has actually changed
+      // Still save on blur if value has changed
       if (inputValue !== (minutes === 0 ? '' : minutes.toString())) {
         onChange(inputValue);
       }
