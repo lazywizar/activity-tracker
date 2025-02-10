@@ -316,24 +316,30 @@ input[type="number"] {
 
 .settings-cell {
   display: flex;
-  justify-content: center;
+  justify-content: flex-end;
   align-items: center;
-  gap: 8px;
-  min-width: 60px;
-  padding: 0;
+  gap: 4px;
+  padding-right: 8px;
 }
 
 .settings-button {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 2px;
-  border-radius: 4px;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #6b7280;
+  transition: color 0.2s;
 }
 
 .settings-button:hover {
-  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.settings-button.expand-button {
+  margin-right: 2px;
 }
 
 @media (max-width: 640px) {
@@ -889,11 +895,13 @@ input[type="number"] {
   }
 
   .settings-cell {
+    width: 30px;
+    min-width: 30px;
+    max-width: 30px;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-width: 28px;
-    padding: 0;
   }
 
   .progress-text {
@@ -901,5 +909,10 @@ input[type="number"] {
     min-width: 16px;
     margin-left: 1px;
     margin-right: 1px;
+  }
+
+  .status-emoji {
+    width: 16px;
+    min-width: 16px;
   }
 }
