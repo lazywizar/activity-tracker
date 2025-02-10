@@ -607,21 +607,21 @@ function ActivityTracker() {
                 placeholder={isMobile ? "name" : "Activity Name"}
                 value={newActivityName}
                 onChange={(e) => setNewActivityName(e.target.value)}
-                className="block w-[40%] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-[40%] py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
               <input
                 type="text"
                 placeholder={isMobile ? "desc." : "Description"}
                 value={newActivityDescription}
                 onChange={(e) => setNewActivityDescription(e.target.value)}
-                className="block w-[35%] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-[35%] py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               />
               <input
                 type="number"
                 placeholder={isMobile ? "hr/wk" : "Hours per week"}
                 value={newActivityWeeklyGoalHours}
                 onChange={(e) => setNewActivityWeeklyGoalHours(e.target.value)}
-                className="block w-[15%] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                className="block w-[15%] py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 min="0"
                 step="0.5"
               />

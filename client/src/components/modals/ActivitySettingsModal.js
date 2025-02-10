@@ -65,7 +65,7 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
             />
           </div>
@@ -78,7 +78,7 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
               id="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
             />
           </div>
 
@@ -89,12 +89,12 @@ const ActivitySettingsModal = ({ activity, onSave, onDelete, onClose }) => {
             <input
               id="weeklyGoalHours"
               type="number"
-              min="0.5"
-              step="0.5"
               value={weeklyGoalHours}
               onChange={(e) => setWeeklyGoalHours(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+              className="mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
               required
+              min="0"
+              step="0.5"
             />
           </div>
 
