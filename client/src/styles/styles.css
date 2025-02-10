@@ -247,7 +247,7 @@ body {
 
 .minute-input {
   width: 100%;
-  max-width: 25px;
+  max-width: 60px;
   height: 24px;
   padding: 2px;
   text-align: center;
@@ -461,7 +461,7 @@ input[type="number"] {
     height: 26px;
   }
   .minute-input {
-    max-width: 25px;
+    max-width: 60px;
     height: 20px;
     font-size: 0.6875rem;
     padding: 2px;
@@ -529,7 +529,7 @@ input[type="number"] {
     height: 26px;
   }
   .minute-input {
-    max-width: 25px;
+    max-width: 60px;
     height: 20px;
     font-size: 0.6875rem;
   }
@@ -672,7 +672,7 @@ input[type="number"] {
   font-size: 0.6875rem;
   height: 18px;
   padding: 1px;
-  max-width: 42px;
+  max-width: 60px;
 }
 
 .history-row .day-cell {
